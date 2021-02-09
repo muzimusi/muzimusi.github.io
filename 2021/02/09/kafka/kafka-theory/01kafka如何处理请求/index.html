@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.14.0/css/all.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/animate.css@3.1.1/animate.min.css">
+
+<script class="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"muzimusi.github.io","root":"/","scheme":"Muse","version":"8.0.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":false,"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"Searching...","empty":"We didn't find any results for the search: ${query}","hits_time":"${hits} results found in ${time} ms","hits":"${hits} results found"}};
+  </script>
+
+  <meta name="description" content="1. kafka-reactor模型broker端使用reactor模型，接收并处理请求（请求可以来自客户端也可来自controller）。 Broker端SocketServer组件，类似于Reactor模式中的Dispatcher，它也有对应的Acceptor线程和一个工作线程池（又叫网络线程池）专门处理”客户端”发送的请求，Broker端参数num.network.threads，用于调整该">
+<meta property="og:type" content="article">
+<meta property="og:title" content="01.kafka如何处理请求">
+<meta property="og:url" content="http://muzimusi.github.io/2021/02/09/kafka/kafka-theory/01kafka%E5%A6%82%E4%BD%95%E5%A4%84%E7%90%86%E8%AF%B7%E6%B1%82/index.html">
+<meta property="og:site_name" content="木子木泗的博客">
+<meta property="og:description" content="1. kafka-reactor模型broker端使用reactor模型，接收并处理请求（请求可以来自客户端也可来自controller）。 Broker端SocketServer组件，类似于Reactor模式中的Dispatcher，它也有对应的Acceptor线程和一个工作线程池（又叫网络线程池）专门处理”客户端”发送的请求，Broker端参数num.network.threads，用于调整该">
+<meta property="og:locale">
+<meta property="og:image" content="http://muzimusi.github.io/2021/02/09/kafka/kafka-theory/01kafka%E5%A6%82%E4%BD%95%E5%A4%84%E7%90%86%E8%AF%B7%E6%B1%82/01.kafka-reactor%E6%A8%A1%E5%9E%8B.png">
+<meta property="og:image" content="http://muzimusi.github.io/2021/02/09/kafka/kafka-theory/01kafka%E5%A6%82%E4%BD%95%E5%A4%84%E7%90%86%E8%AF%B7%E6%B1%82/01.kafka-reactor-handle%E7%BB%86%E8%8A%82.png">
+<meta property="article:published_time" content="2021-02-09T06:42:50.000Z">
+<meta property="article:modified_time" content="2021-02-09T06:55:22.741Z">
+<meta property="article:author" content="muzimusi">
+<meta property="article:tag" content="kafka-theory">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://muzimusi.github.io/2021/02/09/kafka/kafka-theory/01kafka%E5%A6%82%E4%BD%95%E5%A4%84%E7%90%86%E8%AF%B7%E6%B1%82/01.kafka-reactor%E6%A8%A1%E5%9E%8B.png">
+
+
+<link rel="canonical" href="http://muzimusi.github.io/2021/02/09/kafka/kafka-theory/01kafka%E5%A6%82%E4%BD%95%E5%A4%84%E7%90%86%E8%AF%B7%E6%B1%82/">
+
+
+<script class="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-Hans'
+  };
+</script>
+
+  <title>01.kafka如何处理请求 | 木子木泗的博客</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  body { margin-top: 2rem; }
+
+  .use-motion .menu-item,
+  .use-motion .sidebar,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header {
+    visibility: visible;
+  }
+
+  .use-motion .header,
+  .use-motion .site-brand-container .toggle,
+  .use-motion .footer { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle,
+  .use-motion .custom-logo-image {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line {
+    transform: scaleX(1);
+  }
+
+  .search-pop-overlay, .sidebar-nav { display: none; }
+  .sidebar-panel { display: block; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <h1 class="site-title">木子木泗的博客</h1>
+      <i class="logo-line"></i>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>About</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>Tags</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>Categories</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>Archives</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+        
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <section class="post-toc-wrap sidebar-panel">
+          <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#1-kafka-reactor%E6%A8%A1%E5%9E%8B"><span class="nav-number">1.</span> <span class="nav-text">1. kafka-reactor模型</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#2-%E7%BD%91%E7%BB%9C%E7%BA%BF%E7%A8%8B%E6%8E%A5%E6%94%B6%E5%88%B0%E8%AF%B7%E6%B1%82%E5%90%8E%EF%BC%8C%E5%AE%83%E6%98%AF%E6%80%8E%E4%B9%88%E5%A4%84%E7%90%86%E7%9A%84%E5%91%A2"><span class="nav-number">2.</span> <span class="nav-text">2. 网络线程接收到请求后，它是怎么处理的呢</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#3-%E8%AE%BE%E8%AE%A1%E7%BC%BA%E9%99%B7"><span class="nav-number">3.</span> <span class="nav-text">3. 设计缺陷</span></a></li></ol></div>
+      </section>
+      <!--/noindex-->
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">muzimusi</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">2</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">2</span>
+        <span class="site-state-item-name">categories</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">2</span>
+        <span class="site-state-item-name">tags</span></a>
+      </div>
+  </nav>
+</div>
+
+
+
+      </section>
+    </div>
+  </aside>
+  <div class="sidebar-dimmer"></div>
+
+
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+    <div class="main-inner post posts-expand">
+      
+
+      
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-Hans">
+    <link itemprop="mainEntityOfPage" href="http://muzimusi.github.io/2021/02/09/kafka/kafka-theory/01kafka%E5%A6%82%E4%BD%95%E5%A4%84%E7%90%86%E8%AF%B7%E6%B1%82/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="muzimusi">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="木子木泗的博客">
+    </span>
+
+    
+    
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          01.kafka如何处理请求
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">Posted on</span>
+      
+
+      <time title="Created: 2021-02-09 14:42:50 / Modified: 14:55:22" itemprop="dateCreated datePublished" datetime="2021-02-09T14:42:50+08:00">2021-02-09</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">In</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/kafka%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/" itemprop="url" rel="index"><span itemprop="name">kafka学习笔记</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+        <h1 id="1-kafka-reactor模型"><a href="#1-kafka-reactor模型" class="headerlink" title="1. kafka-reactor模型"></a>1. kafka-reactor模型</h1><p><strong>broker端使用reactor模型，接收并处理请求（请求可以来自客户端也可来自controller）。</strong></p>
+<p>Broker端SocketServer组件，类似于Reactor模式中的Dispatcher，它也有对应的Acceptor线程和一个工作线程池（又叫网络线程池）<strong>专门处理”客户端”发送的请求</strong>，Broker端参数num.network.threads，用于调整该网络线程池的线程数。其<strong>默认值是3</strong>。</p>
+<p>Acceptor线程采用轮询的方式将入站请求公平地发到所有网络线程中，因此，在实际使用过程中，这些线程通常都有相同的几率被分配到待处理请求。这种轮询策略编写简单，同时也避免了请求处理的倾斜，有利于实现较为公平的请求处理调度。</p>
+<p>模型图如下:</p>
+<p><img src="/2021/02/09/kafka/kafka-theory/01kafka%E5%A6%82%E4%BD%95%E5%A4%84%E7%90%86%E8%AF%B7%E6%B1%82/01.kafka-reactor%E6%A8%A1%E5%9E%8B.png" alt="01.kafka-reactor模型"></p>
+<h1 id="2-网络线程接收到请求后，它是怎么处理的呢"><a href="#2-网络线程接收到请求后，它是怎么处理的呢" class="headerlink" title="2. 网络线程接收到请求后，它是怎么处理的呢"></a>2. 网络线程接收到请求后，它是怎么处理的呢</h1><ul>
+<li>网络线程拿到请求后，它不是自己处理，而是将请求放入到一个<strong>共享请求队列</strong>中。</li>
+<li>Broker端还有个<strong>IO线程池</strong>，<strong>负责从该队列中取出请求</strong>，<strong>执行真正的处理</strong>。Broker端参数<strong>num.io.threads</strong>控制了线程池的线程数，<strong>默认值是8。</strong>如果是PRODUCE生产请求，则将消息写入到底层的磁盘日志中；如果是FETCH请求，则从磁盘或页缓存中读取消息。</li>
+<li><strong>请求队列是所有网络线程共享的，而响应队列则是每个网络线程专属的</strong>。Dispatcher只是用于请求分发而不负责响应回传，因此只能让每个网络线程自己发送Response给客户端，没必要放在一个公共的地方。</li>
+<li>Purgatory的组件（著名的“炼狱”组件），用来<strong>缓存延时请求</strong>（Delayed Request）。<strong>所谓延时请求，就是那些一时未满足条件不能立刻处理的请求</strong>。比如设置了acks=all的PRODUCE请求，一旦设置了acks=all，那么该请求就必须等待ISR中所有副本都接收了消息后才能返回，此时处理该请求的IO线程就必须等待其他Broker的写入结果。当请求不能立刻处理时，它就会暂存在Purgatory中。稍后一旦满足了完成条件，IO线程会继续处理该请求，并将Response放入对应网络线程的响应队列中。</li>
+</ul>
+<p>handle流程图：</p>
+<p><img src="/2021/02/09/kafka/kafka-theory/01kafka%E5%A6%82%E4%BD%95%E5%A4%84%E7%90%86%E8%AF%B7%E6%B1%82/01.kafka-reactor-handle%E7%BB%86%E8%8A%82.png" alt="kafka-reactor-handle细节"></p>
+<h1 id="3-设计缺陷"><a href="#3-设计缺陷" class="headerlink" title="3. 设计缺陷"></a>3. 设计缺陷</h1><p><strong>Kafka社区把PRODUCE和FETCH这类请求称为数据类请求，把LeaderAndIsr（</strong>负责更新Leader副本、Follower副本以及ISR集合<strong>）、StopReplica（</strong>负责勒令副本下线<strong>）这类请求称为控制类请求。</strong></p>
+<p>当前这种一视同仁的处理方式对控制类请求是不合理的。因为<strong>控制类请求有这样一种能力：它可以直接令数据类请求失效！</strong></p>
+<p><strong>场景1：</strong></p>
+<p>假设主题只有1个分区，两个副本，Leader副本在Broker 0上，Follower副本在Broker 1上。假设Broker 0机器积压了很多的PRODUCE请求。此时如果使用Kafka命令强制将该主题分区的Leader、Follower角色互换，那么Kafka内部的控制器组件（Controller）会发送LeaderAndIsr请求给Broker 0，显式地告诉它，当前它不再是Leader，而是Follower了，假如Broker 1只有少量的FETCH请求，很快开始处理控制类请求，Follower副本成为新的Leader，因此停止向Broker 0拉取消息，停止ack确认。</p>
+<p>这时，一个尴尬的场面就出现了：如果刚才积压的PRODUCE请求都设置了acks=all，那么这些在LeaderAndIsr发送之前的请求就都无法正常完成了。就像前面说的，它们会被暂存在Purgatory中不断重试，<strong>直到最终请求超时返回给客户端</strong>。</p>
+<p>设想一下，如果Kafka能够优先处理LeaderAndIsr请求，Broker 0就会立刻抛出<strong>NOT_LEADER_FOR_PARTITION异常</strong>，快速地标识这些积压PRODUCE请求已失败，这样客户端不用等到Purgatory中的请求超时就能立刻感知，从而降低了请求的处理时间。即使acks不是all，积压的PRODUCE请求能够成功写入Leader副本的日志，但处理LeaderAndIsr之后，Broker 0上的Leader变为了Follower副本，也要执行显式的日志截断（Log Truncation，即原Leader副本成为Follower后，会将之前写入但未提交的消息全部删除），依然做了很多无用功。</p>
+<p><strong>场景2:</strong></p>
+<p>同样是在积压大量数据类请求的Broker上，当你删除主题的时候，Kafka控制器向该Broker发送StopReplica请求。如果该请求不能及时处理，主题删除操作会一直hang住，从而增加了删除主题的延时。</p>
+<p><strong>解决：社区于2.3版本正式实现了数据类请求和控制类请求的分离</strong></p>
+<p>社区完全拷贝了一套组件，实现了两类请求的分离。Kafka Broker启动后，会在后台分别创建两套网络线程池和IO线程池的组合，它们分别处理数据类请求和控制类请求。至于所用的Socket端口，自然是使用不同的端口了，你需要提供不同的<strong>listeners配置</strong>，显式地指定哪套端口用于处理哪类请求。</p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/kafka-theory/" rel="tag"># kafka-theory</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2021/02/09/hello-world/" rel="prev" title="Hello World">
+                  <i class="fa fa-chevron-left"></i> Hello World
+                </a>
+            </div>
+            <div class="post-nav-item">
+            </div>
+          </div>
+    </footer>
+  </article>
+  
+  
+  
+
+
+
+      
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      const activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      const commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+    </div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+      
+
+      
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">muzimusi</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/muse/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a>
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <script src="//cdn.jsdelivr.net/npm/animejs@3.2.0/lib/anime.min.js"></script>
+<script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/schemes/muse.js"></script><script src="/js/next-boot.js"></script>
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>
