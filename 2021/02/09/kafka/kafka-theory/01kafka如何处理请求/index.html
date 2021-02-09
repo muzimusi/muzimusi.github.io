@@ -32,7 +32,7 @@
 <meta property="og:image" content="http://muzimusi.github.io/2021/02/09/kafka/kafka-theory/01kafka%E5%A6%82%E4%BD%95%E5%A4%84%E7%90%86%E8%AF%B7%E6%B1%82/01.kafka-reactor%E6%A8%A1%E5%9E%8B.png">
 <meta property="og:image" content="http://muzimusi.github.io/2021/02/09/kafka/kafka-theory/01kafka%E5%A6%82%E4%BD%95%E5%A4%84%E7%90%86%E8%AF%B7%E6%B1%82/01.kafka-reactor-handle%E7%BB%86%E8%8A%82.png">
 <meta property="article:published_time" content="2021-02-09T06:42:50.000Z">
-<meta property="article:modified_time" content="2021-02-09T06:55:22.741Z">
+<meta property="article:modified_time" content="2021-02-09T08:07:32.631Z">
 <meta property="article:author" content="muzimusi">
 <meta property="article:tag" content="kafka-theory">
 <meta name="twitter:card" content="summary">
@@ -275,7 +275,7 @@
       <span class="post-meta-item-text">Posted on</span>
       
 
-      <time title="Created: 2021-02-09 14:42:50 / Modified: 14:55:22" itemprop="dateCreated datePublished" datetime="2021-02-09T14:42:50+08:00">2021-02-09</time>
+      <time title="Created: 2021-02-09 14:42:50 / Modified: 16:07:32" itemprop="dateCreated datePublished" datetime="2021-02-09T14:42:50+08:00">2021-02-09</time>
     </span>
     <span class="post-meta-item">
       <span class="post-meta-item-icon">
@@ -299,6 +299,8 @@
     <div class="post-body" itemprop="articleBody">
         <h1 id="1-kafka-reactor模型"><a href="#1-kafka-reactor模型" class="headerlink" title="1. kafka-reactor模型"></a>1. kafka-reactor模型</h1><p><strong>broker端使用reactor模型，接收并处理请求（请求可以来自客户端也可来自controller）。</strong></p>
 <p>Broker端SocketServer组件，类似于Reactor模式中的Dispatcher，它也有对应的Acceptor线程和一个工作线程池（又叫网络线程池）<strong>专门处理”客户端”发送的请求</strong>，Broker端参数num.network.threads，用于调整该网络线程池的线程数。其<strong>默认值是3</strong>。</p>
+<a id="more"></a>
+
 <p>Acceptor线程采用轮询的方式将入站请求公平地发到所有网络线程中，因此，在实际使用过程中，这些线程通常都有相同的几率被分配到待处理请求。这种轮询策略编写简单，同时也避免了请求处理的倾斜，有利于实现较为公平的请求处理调度。</p>
 <p>模型图如下:</p>
 <p><img src="/2021/02/09/kafka/kafka-theory/01kafka%E5%A6%82%E4%BD%95%E5%A4%84%E7%90%86%E8%AF%B7%E6%B1%82/01.kafka-reactor%E6%A8%A1%E5%9E%8B.png" alt="01.kafka-reactor模型"></p>

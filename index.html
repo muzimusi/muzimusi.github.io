@@ -266,7 +266,7 @@
       <span class="post-meta-item-text">Posted on</span>
       
 
-      <time title="Created: 2021-02-09 14:42:50 / Modified: 14:55:22" itemprop="dateCreated datePublished" datetime="2021-02-09T14:42:50+08:00">2021-02-09</time>
+      <time title="Created: 2021-02-09 14:42:50 / Modified: 16:07:32" itemprop="dateCreated datePublished" datetime="2021-02-09T14:42:50+08:00">2021-02-09</time>
     </span>
     <span class="post-meta-item">
       <span class="post-meta-item-icon">
@@ -290,28 +290,14 @@
     <div class="post-body" itemprop="articleBody">
           <h1 id="1-kafka-reactor模型"><a href="#1-kafka-reactor模型" class="headerlink" title="1. kafka-reactor模型"></a>1. kafka-reactor模型</h1><p><strong>broker端使用reactor模型，接收并处理请求（请求可以来自客户端也可来自controller）。</strong></p>
 <p>Broker端SocketServer组件，类似于Reactor模式中的Dispatcher，它也有对应的Acceptor线程和一个工作线程池（又叫网络线程池）<strong>专门处理”客户端”发送的请求</strong>，Broker端参数num.network.threads，用于调整该网络线程池的线程数。其<strong>默认值是3</strong>。</p>
-<p>Acceptor线程采用轮询的方式将入站请求公平地发到所有网络线程中，因此，在实际使用过程中，这些线程通常都有相同的几率被分配到待处理请求。这种轮询策略编写简单，同时也避免了请求处理的倾斜，有利于实现较为公平的请求处理调度。</p>
-<p>模型图如下:</p>
-<p><img src="/2021/02/09/kafka/kafka-theory/01kafka%E5%A6%82%E4%BD%95%E5%A4%84%E7%90%86%E8%AF%B7%E6%B1%82/01.kafka-reactor%E6%A8%A1%E5%9E%8B.png" alt="01.kafka-reactor模型"></p>
-<h1 id="2-网络线程接收到请求后，它是怎么处理的呢"><a href="#2-网络线程接收到请求后，它是怎么处理的呢" class="headerlink" title="2. 网络线程接收到请求后，它是怎么处理的呢"></a>2. 网络线程接收到请求后，它是怎么处理的呢</h1><ul>
-<li>网络线程拿到请求后，它不是自己处理，而是将请求放入到一个<strong>共享请求队列</strong>中。</li>
-<li>Broker端还有个<strong>IO线程池</strong>，<strong>负责从该队列中取出请求</strong>，<strong>执行真正的处理</strong>。Broker端参数<strong>num.io.threads</strong>控制了线程池的线程数，<strong>默认值是8。</strong>如果是PRODUCE生产请求，则将消息写入到底层的磁盘日志中；如果是FETCH请求，则从磁盘或页缓存中读取消息。</li>
-<li><strong>请求队列是所有网络线程共享的，而响应队列则是每个网络线程专属的</strong>。Dispatcher只是用于请求分发而不负责响应回传，因此只能让每个网络线程自己发送Response给客户端，没必要放在一个公共的地方。</li>
-<li>Purgatory的组件（著名的“炼狱”组件），用来<strong>缓存延时请求</strong>（Delayed Request）。<strong>所谓延时请求，就是那些一时未满足条件不能立刻处理的请求</strong>。比如设置了acks=all的PRODUCE请求，一旦设置了acks=all，那么该请求就必须等待ISR中所有副本都接收了消息后才能返回，此时处理该请求的IO线程就必须等待其他Broker的写入结果。当请求不能立刻处理时，它就会暂存在Purgatory中。稍后一旦满足了完成条件，IO线程会继续处理该请求，并将Response放入对应网络线程的响应队列中。</li>
-</ul>
-<p>handle流程图：</p>
-<p><img src="/2021/02/09/kafka/kafka-theory/01kafka%E5%A6%82%E4%BD%95%E5%A4%84%E7%90%86%E8%AF%B7%E6%B1%82/01.kafka-reactor-handle%E7%BB%86%E8%8A%82.png" alt="kafka-reactor-handle细节"></p>
-<h1 id="3-设计缺陷"><a href="#3-设计缺陷" class="headerlink" title="3. 设计缺陷"></a>3. 设计缺陷</h1><p><strong>Kafka社区把PRODUCE和FETCH这类请求称为数据类请求，把LeaderAndIsr（</strong>负责更新Leader副本、Follower副本以及ISR集合<strong>）、StopReplica（</strong>负责勒令副本下线<strong>）这类请求称为控制类请求。</strong></p>
-<p>当前这种一视同仁的处理方式对控制类请求是不合理的。因为<strong>控制类请求有这样一种能力：它可以直接令数据类请求失效！</strong></p>
-<p><strong>场景1：</strong></p>
-<p>假设主题只有1个分区，两个副本，Leader副本在Broker 0上，Follower副本在Broker 1上。假设Broker 0机器积压了很多的PRODUCE请求。此时如果使用Kafka命令强制将该主题分区的Leader、Follower角色互换，那么Kafka内部的控制器组件（Controller）会发送LeaderAndIsr请求给Broker 0，显式地告诉它，当前它不再是Leader，而是Follower了，假如Broker 1只有少量的FETCH请求，很快开始处理控制类请求，Follower副本成为新的Leader，因此停止向Broker 0拉取消息，停止ack确认。</p>
-<p>这时，一个尴尬的场面就出现了：如果刚才积压的PRODUCE请求都设置了acks=all，那么这些在LeaderAndIsr发送之前的请求就都无法正常完成了。就像前面说的，它们会被暂存在Purgatory中不断重试，<strong>直到最终请求超时返回给客户端</strong>。</p>
-<p>设想一下，如果Kafka能够优先处理LeaderAndIsr请求，Broker 0就会立刻抛出<strong>NOT_LEADER_FOR_PARTITION异常</strong>，快速地标识这些积压PRODUCE请求已失败，这样客户端不用等到Purgatory中的请求超时就能立刻感知，从而降低了请求的处理时间。即使acks不是all，积压的PRODUCE请求能够成功写入Leader副本的日志，但处理LeaderAndIsr之后，Broker 0上的Leader变为了Follower副本，也要执行显式的日志截断（Log Truncation，即原Leader副本成为Follower后，会将之前写入但未提交的消息全部删除），依然做了很多无用功。</p>
-<p><strong>场景2:</strong></p>
-<p>同样是在积压大量数据类请求的Broker上，当你删除主题的时候，Kafka控制器向该Broker发送StopReplica请求。如果该请求不能及时处理，主题删除操作会一直hang住，从而增加了删除主题的延时。</p>
-<p><strong>解决：社区于2.3版本正式实现了数据类请求和控制类请求的分离</strong></p>
-<p>社区完全拷贝了一套组件，实现了两类请求的分离。Kafka Broker启动后，会在后台分别创建两套网络线程池和IO线程池的组合，它们分别处理数据类请求和控制类请求。至于所用的Socket端口，自然是使用不同的端口了，你需要提供不同的<strong>listeners配置</strong>，显式地指定哪套端口用于处理哪类请求。</p>
-
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2021/02/09/kafka/kafka-theory/01kafka%E5%A6%82%E4%BD%95%E5%A4%84%E7%90%86%E8%AF%B7%E6%B1%82/#more" rel="contents">
+                Read more &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
       
     </div>
 
@@ -361,7 +347,7 @@
       <span class="post-meta-item-text">Posted on</span>
       
 
-      <time title="Created: 2021-02-09 11:41:13 / Modified: 14:17:55" itemprop="dateCreated datePublished" datetime="2021-02-09T11:41:13+08:00">2021-02-09</time>
+      <time title="Created: 2021-02-09 11:41:13 / Modified: 16:08:19" itemprop="dateCreated datePublished" datetime="2021-02-09T11:41:13+08:00">2021-02-09</time>
     </span>
     <span class="post-meta-item">
       <span class="post-meta-item-icon">
@@ -385,14 +371,14 @@
     <div class="post-body" itemprop="articleBody">
           <p>Welcome to <a target="_blank" rel="noopener" href="https://hexo.io/">Hexo</a>! This is your very first post. Check <a target="_blank" rel="noopener" href="https://hexo.io/docs/">documentation</a> for more info. If you get any problems when using Hexo, you can find the answer in <a target="_blank" rel="noopener" href="https://hexo.io/docs/troubleshooting.html">troubleshooting</a> or you can ask me on <a target="_blank" rel="noopener" href="https://github.com/hexojs/hexo/issues">GitHub</a>.</p>
 <h2 id="Quick-Start"><a href="#Quick-Start" class="headerlink" title="Quick Start"></a>Quick Start</h2><h3 id="Create-a-new-post"><a href="#Create-a-new-post" class="headerlink" title="Create a new post"></a>Create a new post</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo new <span class="string">&quot;My New Post&quot;</span></span><br></pre></td></tr></table></figure>
-<p>More info: <a target="_blank" rel="noopener" href="https://hexo.io/docs/writing.html">Writing</a></p>
-<h3 id="Run-server"><a href="#Run-server" class="headerlink" title="Run server"></a>Run server</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo server</span><br></pre></td></tr></table></figure>
-<p>More info: <a target="_blank" rel="noopener" href="https://hexo.io/docs/server.html">Server</a></p>
-<h3 id="Generate-static-files"><a href="#Generate-static-files" class="headerlink" title="Generate static files"></a>Generate static files</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo generate</span><br></pre></td></tr></table></figure>
-<p>More info: <a target="_blank" rel="noopener" href="https://hexo.io/docs/generating.html">Generating</a></p>
-<h3 id="Deploy-to-remote-sites"><a href="#Deploy-to-remote-sites" class="headerlink" title="Deploy to remote sites"></a>Deploy to remote sites</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo deploy</span><br></pre></td></tr></table></figure>
-<p>More info: <a target="_blank" rel="noopener" href="https://hexo.io/docs/one-command-deployment.html">Deployment</a></p>
-
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2021/02/09/hello-world/#more" rel="contents">
+                Read more &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
       
     </div>
 
