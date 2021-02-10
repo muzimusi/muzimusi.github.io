@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.14.0/css/all.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/animate.css@3.1.1/animate.min.css">
+
+<script class="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"muzimusi.github.io","root":"/","scheme":"Muse","version":"8.0.0","exturl":false,"sidebar":{"position":"right","display":"post","padding":18,"offset":12},"copycode":false,"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"Searching...","empty":"We didn't find any results for the search: ${query}","hits_time":"${hits} results found in ${time} ms","hits":"${hits} results found"}};
+  </script>
+
+  <meta name="description" content="什么是高水位？水位线定义水位一词多用于流式处理领域，比如，Spark Streaming或Flink框架中都有水位的概念。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="高水位和Leader Epoch">
+<meta property="og:url" content="http://muzimusi.github.io/posts/c8cdf238.html">
+<meta property="og:site_name" content="木子木泗的博客">
+<meta property="og:description" content="什么是高水位？水位线定义水位一词多用于流式处理领域，比如，Spark Streaming或Flink框架中都有水位的概念。">
+<meta property="og:locale">
+<meta property="og:image" content="http://muzimusi.github.io/Users/lijie/WorkSpaces/muzimusi.github.io/source/_posts/kafka/kafka-theory/%E9%AB%98%E6%B0%B4%E4%BD%8D%E5%92%8CLeader/water-mark-defination.png">
+<meta property="og:image" content="http://muzimusi.github.io/posts/c8cdf238/water-mark-defination.png">
+<meta property="og:image" content="http://muzimusi.github.io/Users/lijie/WorkSpaces/muzimusi.github.io/source/_posts/kafka/kafka-theory/%E9%AB%98%E6%B0%B4%E4%BD%8D%E5%92%8CLeader/HW.png">
+<meta property="og:image" content="http://muzimusi.github.io/posts/c8cdf238/HW.png">
+<meta property="og:image" content="http://muzimusi.github.io/Users/lijie/WorkSpaces/muzimusi.github.io/source/_posts/kafka/kafka-theory/%E9%AB%98%E6%B0%B4%E4%BD%8D%E5%92%8CLeader/broker-HW-LEO.svg">
+<meta property="og:image" content="http://muzimusi.github.io/posts/c8cdf238/broker-HW-LEO.svg">
+<meta property="og:image" content="http://muzimusi.github.io/Users/lijie/WorkSpaces/muzimusi.github.io/source/_posts/kafka/kafka-theory/%E9%AB%98%E6%B0%B4%E4%BD%8D%E5%92%8CLeader/%E6%9B%B4%E6%96%B0%E6%97%B6%E6%9C%BA.svg">
+<meta property="og:image" content="http://muzimusi.github.io/posts/c8cdf238/%E6%9B%B4%E6%96%B0%E6%97%B6%E6%9C%BA.svg">
+<meta property="article:published_time" content="2021-02-09T11:35:48.000Z">
+<meta property="article:modified_time" content="2021-02-10T03:06:40.329Z">
+<meta property="article:author" content="muzimusi">
+<meta property="article:tag" content="kafka原理">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://muzimusi.github.io/Users/lijie/WorkSpaces/muzimusi.github.io/source/_posts/kafka/kafka-theory/%E9%AB%98%E6%B0%B4%E4%BD%8D%E5%92%8CLeader/water-mark-defination.png">
+
+
+<link rel="canonical" href="http://muzimusi.github.io/posts/c8cdf238.html">
+
+
+<script class="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-Hans'
+  };
+</script>
+
+  <title>高水位和Leader Epoch | 木子木泗的博客</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  body { margin-top: 2rem; }
+
+  .use-motion .menu-item,
+  .use-motion .sidebar,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header {
+    visibility: visible;
+  }
+
+  .use-motion .header,
+  .use-motion .site-brand-container .toggle,
+  .use-motion .footer { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle,
+  .use-motion .custom-logo-image {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line {
+    transform: scaleX(1);
+  }
+
+  .search-pop-overlay, .sidebar-nav { display: none; }
+  .sidebar-panel { display: block; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <h1 class="site-title">木子木泗的博客</h1>
+      <i class="logo-line"></i>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>About</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>Tags</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>Categories</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>Archives</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+        
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <section class="post-toc-wrap sidebar-panel">
+          <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%BB%80%E4%B9%88%E6%98%AF%E9%AB%98%E6%B0%B4%E4%BD%8D%EF%BC%9F"><span class="nav-number">1.</span> <span class="nav-text">什么是高水位？</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%B0%B4%E4%BD%8D%E7%BA%BF%E5%AE%9A%E4%B9%89"><span class="nav-number">1.1.</span> <span class="nav-text">水位线定义</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#kafka%E4%B8%AD%E7%9A%84%E6%B0%B4%E4%BD%8D%E7%BA%BF"><span class="nav-number">1.2.</span> <span class="nav-text">kafka中的水位线</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%AB%98%E6%B0%B4%E4%BD%8D%E7%9A%84%E4%BD%9C%E7%94%A8"><span class="nav-number">1.3.</span> <span class="nav-text">高水位的作用</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%AB%98%E6%B0%B4%E4%BD%8D%E6%9B%B4%E6%96%B0%E6%9C%BA%E5%88%B6"><span class="nav-number">1.4.</span> <span class="nav-text">高水位更新机制</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%89%AF%E6%9C%AC%E5%90%8C%E6%AD%A5%E6%9C%BA%E5%88%B6%E5%85%A8%E6%B5%81%E7%A8%8B%E8%A7%A3%E6%9E%90"><span class="nav-number">1.5.</span> <span class="nav-text">副本同步机制全流程解析</span></a></li></ol></li></ol></div>
+      </section>
+      <!--/noindex-->
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">muzimusi</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">3</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">2</span>
+        <span class="site-state-item-name">categories</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">2</span>
+        <span class="site-state-item-name">tags</span></a>
+      </div>
+  </nav>
+</div>
+
+
+
+      </section>
+    </div>
+  </aside>
+  <div class="sidebar-dimmer"></div>
+
+
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+    <div class="main-inner post posts-expand">
+      
+
+      
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-Hans">
+    <link itemprop="mainEntityOfPage" href="http://muzimusi.github.io/posts/c8cdf238.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="muzimusi">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="木子木泗的博客">
+    </span>
+
+    
+    
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          高水位和Leader Epoch
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">Posted on</span>
+
+      <time title="Created: 2021-02-09 19:35:48" itemprop="dateCreated datePublished" datetime="2021-02-09T19:35:48+08:00">2021-02-09</time>
+    </span>
+      <span class="post-meta-item">
+        <span class="post-meta-item-icon">
+          <i class="far fa-calendar-check"></i>
+        </span>
+        <span class="post-meta-item-text">Edited on</span>
+        <time title="Modified: 2021-02-10 11:06:40" itemprop="dateModified" datetime="2021-02-10T11:06:40+08:00">2021-02-10</time>
+      </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">In</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/kafka%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/" itemprop="url" rel="index"><span itemprop="name">kafka学习笔记</span></a>
+        </span>
+    </span>
+
+  
+    <span class="post-meta-item" title="Views" id="busuanzi_container_page_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="far fa-eye"></i>
+      </span>
+      <span class="post-meta-item-text">Views: </span>
+      <span id="busuanzi_value_page_pv"></span>
+    </span>
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+        <h1 id="什么是高水位？"><a href="#什么是高水位？" class="headerlink" title="什么是高水位？"></a>什么是高水位？</h1><h2 id="水位线定义"><a href="#水位线定义" class="headerlink" title="水位线定义"></a>水位线定义</h2><p>水位一词多用于流式处理领域，比如，Spark Streaming或Flink框架中都有水位的概念。</p>
+<a id="more"></a>
+
+<p>经典定义：</p>
+<blockquote>
+<p>在时刻T，任意创建时间（Event Time）为T’，且T’≤T的所有事件都已经到达或被观测到，那么T就被定义为水位。</p>
+</blockquote>
+<p>“Streaming System”一书中定义：</p>
+<blockquote>
+<p>水位是一个单调增加且表征最早未完成工作（oldest work not yet completed）的时间戳。</p>
+</blockquote>
+<p><img src="/Users/lijie/WorkSpaces/muzimusi.github.io/source/_posts/kafka/kafka-theory/%E9%AB%98%E6%B0%B4%E4%BD%8D%E5%92%8CLeader/water-mark-defination.png" alt="water-mark-defination"></p>
+<img src="/posts/c8cdf238/water-mark-defination.png" class title="water-mark-defination">
+
+<blockquote>
+<p>“Completed”代表已完成的工作，“In-Flight”代表正在进行中的工作， 两者的边界就是水位线。</p>
+</blockquote>
+<h2 id="kafka中的水位线"><a href="#kafka中的水位线" class="headerlink" title="kafka中的水位线"></a>kafka中的水位线</h2><p>在Kafka的世界中，水位的概念很特殊，它是用消息位移来表征的。</p>
+<blockquote>
+<ol>
+<li>Kafka的水位不是时间戳，更与时间无关。它是和位置信息绑定的。</li>
+<li>Kafka中有高水位（High Watermark）</li>
+<li>Kafka中也有低水位（Low Watermark）（Kafka删除消息相关联的概念）</li>
+</ol>
+</blockquote>
+<h2 id="高水位的作用"><a href="#高水位的作用" class="headerlink" title="高水位的作用"></a>高水位的作用</h2><p>在Kafka中，高水位的作用主要有2个。</p>
+<blockquote>
+<ol>
+<li>定义消息可见性，即用来标识分区下的哪些消息是可以被消费者消费的。</li>
+<li>帮助Kafka完成副本同步。</li>
+</ol>
+</blockquote>
+<p>下面这张图展示了多个与高水位相关的Kafka术语，和一些常见的误区。<br><img src="/Users/lijie/WorkSpaces/muzimusi.github.io/source/_posts/kafka/kafka-theory/%E9%AB%98%E6%B0%B4%E4%BD%8D%E5%92%8CLeader/HW.png" alt="HW"></p>
+<img src="/posts/c8cdf238/HW.png" class title="HW.png">
+
+<p><strong>高水位和LEO是副本对象的两个重要属性。</strong></p>
+<p>在分区高水位以下的消息被认为是已提交消息，反之就是未提交消息。消费者只能消费已提交消息，即图中位移小于8的所有消息。注意，这里我们不讨论Kafka事务，因为事务机制会影响消费者所能看到的消息的范围，它不只是简单依赖高水位来判断。它依靠一个名为LSO（Log Stable Offset）的位移值来判断事务型消费者的可见性。</p>
+<p>Log End Offset，简写是LEO。它表示副本写入下一条消息的位移值。注意，数字15所在的方框是虚线，这就说明，这个副本当前只有15条消息，位移值是从0到14，下一条新消息的位移是15。显然，介于高水位和LEO之间的消息就属于未提交消息。这也从侧面告诉了我们一个重要的事实，那就是：<strong>同一个副本对象，其高水位值不会大于LEO值</strong>。</p>
+<p>Kafka所有副本都有对应的高水位和LEO值，不仅仅是Leader副本。只不过Leader副本比较特殊，Kafka使用Leader副本的高水位来定义所在分区的高水位。</p>
+<blockquote>
+<ol>
+<li>高水位以下的消息被认为是已提交消息，反之就是未提交消息，对消费者不可见。</li>
+<li>位移值等于高水位的消息也属于未提交消息。也就是说，高水位上的消息是不能被消费者消费的。</li>
+<li>同一个副本对象，其高水位值不会大于LEO值。</li>
+<li>分区的高水位就是其Leader副本的高水位。</li>
+<li>在Leader副本所在的Broker上，还保存了其他Follower副本的LEO值</li>
+</ol>
+</blockquote>
+<h2 id="高水位更新机制"><a href="#高水位更新机制" class="headerlink" title="高水位更新机制"></a>高水位更新机制</h2><p>每个副本对象都保存了一组高水位值<code>HW</code>和<code>LEO</code>值，实际上，Leader副本所在的Broker上，还保存了其他Follower副本的<code>LEO</code>值，如下图所示：</p>
+<p><img src="/Users/lijie/WorkSpaces/muzimusi.github.io/source/_posts/kafka/kafka-theory/%E9%AB%98%E6%B0%B4%E4%BD%8D%E5%92%8CLeader/broker-HW-LEO.svg" alt="broker-HW-LEO"></p>
+<img src="/posts/c8cdf238/broker-HW-LEO.svg" class title="broker-HW-LEO">
+
+<p>图中，可以看到，<code>Broker 0</code>上保存了分区P的 <code>Leader</code> 副本的 <code>HW</code> 和 <code>LEO</code>，以及所有<code>Follower</code>副本的<code>LEO</code>值（不保存<code>HW</code>），而<code>Broker 1</code>和<code>Broker 2</code>上仅仅保存了该分区的某个<code>Follower</code>副本。Kafka把<code>Broker 0</code>上保存的这些<code>Follower</code>副本又称为<strong>远程副本</strong>（<code>Remote Replica</code>）。</p>
+<p>以下为了叙述方便，只讨论broker 0 和 broker 1。</p>
+<p>Kafka副本机制在运行过程中，会更新<code>Broker 1</code>上<code>Follower</code>副本的高水位<code>HW</code>和<code>LEO</code>值，同时也会更新<code>Broker 0</code>上<code>Leader</code>副本的高水位<code>HW</code>和<code>LEO</code>以及所有远程副本的<code>LEO</code>，但它不会更新远程副本的高水位值<code>HW</code>，也就是图中标记为灰色的部分。</p>
+<blockquote>
+<p>leader：</p>
+<blockquote>
+<ol>
+<li>更新自身<code>HW</code> 和<code>LEO</code></li>
+<li>只更新 <code>Remote Replica</code> 的 <code>LEO</code></li>
+</ol>
+</blockquote>
+<p>flower：</p>
+<blockquote>
+<p>更新自身<code>HW</code>和<code>LEO</code></p>
+</blockquote>
+</blockquote>
+<p>为什么要在Broker 0上保存这些远程副本呢？其实，它们的主要作用是，<strong>帮助Leader副本确定其高水位，也就是分区高水位</strong>。</p>
+<p>具体而言：<code>leader</code>和<code>flower</code>的<code>HW</code>和<code>LEO</code>更新时机如下表所示：</p>
+<p><img src="/Users/lijie/WorkSpaces/muzimusi.github.io/source/_posts/kafka/kafka-theory/%E9%AB%98%E6%B0%B4%E4%BD%8D%E5%92%8CLeader/%E6%9B%B4%E6%96%B0%E6%97%B6%E6%9C%BA.svg" alt="更新时机"></p>
+<img src="/posts/c8cdf238/%E6%9B%B4%E6%96%B0%E6%97%B6%E6%9C%BA.svg" class title="更新时机">
+
+<p>与Leader副本保持同步。判断的条件有两个。</p>
+<ul>
+<li>该远程Follower副本在ISR中。</li>
+<li>该远程Follower副本LEO值落后于Leader副本LEO值的时间，不超过Broker端参数replica.lag.time.max.ms的值。如果使用默认值的话，就是不超过10秒。</li>
+</ul>
+<p>乍一看，这两个条件好像是一回事，因为目前某个副本能否进入ISR就是靠第2个条件判断的。但有些时候，会发生这样的情况：即Follower副本已经“追上”了Leader的进度，却不在ISR中，比如某个刚刚重启回来的副本。如果Kafka只判断第1个条件的话，就可能出现某些副本具备了“进入ISR”的资格，但却尚未进入到ISR中的情况。此时，分区高水位值就可能超过ISR中副本LEO，而高水位 &gt; LEO的情形是不被允许的。</p>
+<p>下面，分别从Leader副本和Follower副本两个维度，来总结一下高水位和LEO的更新机制。</p>
+<p><strong>Leader副本</strong></p>
+<ul>
+<li>处理生产者请求的逻辑如下：<blockquote>
+</blockquote>
+写入消息到本地磁盘。<br>更新LEO值。<br>更新分区高水位值。<blockquote>
+<ol>
+<li>获取Leader副本所在Broker端保存的所有远程副本LEO值（LEO-1，LEO-2，……，LEO-n）</li>
+<li>获取Leader副本高水位值：currentHW。</li>
+<li>更新 currentHW = max{currentHW, min（LEO-1, LEO-2, ……，LEO-n）}。</li>
+</ol>
+</blockquote>
+</li>
+</ul>
+<ul>
+<li>处理Follower副本拉取消息的逻辑如下：<blockquote>
+</blockquote>
+读取磁盘（或页缓存）中的消息数据。<br>使用Follower副本发送请求中的位移值更新远程副本LEO值。<br>更新分区高水位值（具体步骤与处理生产者请求的步骤相同）。</li>
+</ul>
+<p><strong>Follower副本</strong></p>
+<ul>
+<li>从Leader拉取消息的处理逻辑如下：<blockquote>
+</blockquote>
+写入消息到本地磁盘。<br>更新LEO值。<br>更新高水位值。<blockquote>
+<ol>
+<li>获取Leader发送的高水位值：currentHW。</li>
+<li>获取步骤2中更新过的LEO值：currentLEO。</li>
+<li>更新高水位为min(currentHW, currentLEO)。</li>
+</ol>
+</blockquote>
+</li>
+</ul>
+<h2 id="副本同步机制全流程解析"><a href="#副本同步机制全流程解析" class="headerlink" title="副本同步机制全流程解析"></a>副本同步机制全流程解析</h2><p>搞清楚了这些值的更新机制之后，看一个实际的例子，说明一下Kafka副本同步的全流程。该例子使用一个单分区且有两个副本的主题。</p>
+<p>当生产者发送一条消息时，Leader和Follower副本对应的高水位是怎么被更新的呢？下面图解一一来看。</p>
+<p>首先是初始状态。下面这张图中的remote LEO就是刚才的远程副本的LEO值。在初始状态时，所有值都是0。</p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/kafka%E5%8E%9F%E7%90%86/" rel="tag"># kafka原理</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/posts/21d2cd27.html" rel="prev" title="01.kafka如何处理请求">
+                  <i class="fa fa-chevron-left"></i> 01.kafka如何处理请求
+                </a>
+            </div>
+            <div class="post-nav-item">
+            </div>
+          </div>
+    </footer>
+  </article>
+  
+  
+  
+
+
+
+      
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      const activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      const commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+    </div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+      
+
+      
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">muzimusi</span>
+</div>
+<div class="busuanzi-count">
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="Total Visitors">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="Total Views">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/muse/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a>
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <script src="//cdn.jsdelivr.net/npm/animejs@3.2.0/lib/anime.min.js"></script>
+<script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/schemes/muse.js"></script><script src="/js/next-boot.js"></script>
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

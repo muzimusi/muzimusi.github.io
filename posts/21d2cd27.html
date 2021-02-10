@@ -19,27 +19,29 @@
 
 <script class="hexo-configurations">
     var NexT = window.NexT || {};
-    var CONFIG = {"hostname":"muzimusi.github.io","root":"/","scheme":"Muse","version":"8.0.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":false,"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"Searching...","empty":"We didn't find any results for the search: ${query}","hits_time":"${hits} results found in ${time} ms","hits":"${hits} results found"}};
+    var CONFIG = {"hostname":"muzimusi.github.io","root":"/","scheme":"Muse","version":"8.0.0","exturl":false,"sidebar":{"position":"right","display":"post","padding":18,"offset":12},"copycode":false,"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"Searching...","empty":"We didn't find any results for the search: ${query}","hits_time":"${hits} results found in ${time} ms","hits":"${hits} results found"}};
   </script>
 
   <meta name="description" content="1. kafka-reactor模型broker端使用reactor模型，接收并处理请求（请求可以来自客户端也可来自controller）。 Broker端SocketServer组件，类似于Reactor模式中的Dispatcher，它也有对应的Acceptor线程和一个工作线程池（又叫网络线程池）专门处理”客户端”发送的请求，Broker端参数num.network.threads，用于调整该">
 <meta property="og:type" content="article">
 <meta property="og:title" content="01.kafka如何处理请求">
-<meta property="og:url" content="http://muzimusi.github.io/2021/02/09/kafka/kafka-theory/01-kafka%E5%A6%82%E4%BD%95%E5%A4%84%E7%90%86%E8%AF%B7%E6%B1%82/index.html">
+<meta property="og:url" content="http://muzimusi.github.io/posts/21d2cd27.html">
 <meta property="og:site_name" content="木子木泗的博客">
 <meta property="og:description" content="1. kafka-reactor模型broker端使用reactor模型，接收并处理请求（请求可以来自客户端也可来自controller）。 Broker端SocketServer组件，类似于Reactor模式中的Dispatcher，它也有对应的Acceptor线程和一个工作线程池（又叫网络线程池）专门处理”客户端”发送的请求，Broker端参数num.network.threads，用于调整该">
 <meta property="og:locale">
-<meta property="og:image" content="http://muzimusi.github.io/2021/02/09/kafka/kafka-theory/01-kafka%E5%A6%82%E4%BD%95%E5%A4%84%E7%90%86%E8%AF%B7%E6%B1%82/01.kafka-reactor%E6%A8%A1%E5%9E%8B.png">
-<meta property="og:image" content="http://muzimusi.github.io/2021/02/09/kafka/kafka-theory/01-kafka%E5%A6%82%E4%BD%95%E5%A4%84%E7%90%86%E8%AF%B7%E6%B1%82/01.kafka-reactor-handle%E7%BB%86%E8%8A%82.png">
+<meta property="og:image" content="http://muzimusi.github.io/Users/lijie/WorkSpaces/muzimusi.github.io/source/_posts/kafka/kafka-theory/kafka%E5%A6%82%E4%BD%95%E5%A4%84%E7%90%86%E8%AF%B7%E6%B1%82/01.kafka-reactor%E6%A8%A1%E5%9E%8B.png">
+<meta property="og:image" content="http://muzimusi.github.io/posts/21d2cd27/01.kafka-reactor%E6%A8%A1%E5%9E%8B.png">
+<meta property="og:image" content="http://muzimusi.github.io/Users/lijie/WorkSpaces/muzimusi.github.io/source/_posts/kafka/kafka-theory/kafka%E5%A6%82%E4%BD%95%E5%A4%84%E7%90%86%E8%AF%B7%E6%B1%82/01.kafka-reactor-handle%E7%BB%86%E8%8A%82.png">
+<meta property="og:image" content="http://muzimusi.github.io/posts/21d2cd27/01.kafka-reactor-handle%E7%BB%86%E8%8A%82.png">
 <meta property="article:published_time" content="2021-02-09T06:42:50.000Z">
-<meta property="article:modified_time" content="2021-02-09T08:07:32.631Z">
+<meta property="article:modified_time" content="2021-02-10T03:10:53.893Z">
 <meta property="article:author" content="muzimusi">
-<meta property="article:tag" content="kafka-theory">
+<meta property="article:tag" content="kafka原理">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:image" content="http://muzimusi.github.io/2021/02/09/kafka/kafka-theory/01-kafka%E5%A6%82%E4%BD%95%E5%A4%84%E7%90%86%E8%AF%B7%E6%B1%82/01.kafka-reactor%E6%A8%A1%E5%9E%8B.png">
+<meta name="twitter:image" content="http://muzimusi.github.io/Users/lijie/WorkSpaces/muzimusi.github.io/source/_posts/kafka/kafka-theory/kafka%E5%A6%82%E4%BD%95%E5%A4%84%E7%90%86%E8%AF%B7%E6%B1%82/01.kafka-reactor%E6%A8%A1%E5%9E%8B.png">
 
 
-<link rel="canonical" href="http://muzimusi.github.io/2021/02/09/kafka/kafka-theory/01-kafka%E5%A6%82%E4%BD%95%E5%A4%84%E7%90%86%E8%AF%B7%E6%B1%82/">
+<link rel="canonical" href="http://muzimusi.github.io/posts/21d2cd27.html">
 
 
 <script class="page-configurations">
@@ -198,7 +200,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">2</span>
+          <span class="site-state-item-count">3</span>
           <span class="site-state-item-name">posts</span>
         </a>
       </div>
@@ -247,7 +249,7 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-Hans">
-    <link itemprop="mainEntityOfPage" href="http://muzimusi.github.io/2021/02/09/kafka/kafka-theory/01-kafka%E5%A6%82%E4%BD%95%E5%A4%84%E7%90%86%E8%AF%B7%E6%B1%82/">
+    <link itemprop="mainEntityOfPage" href="http://muzimusi.github.io/posts/21d2cd27.html">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.gif">
@@ -273,10 +275,16 @@
         <i class="far fa-calendar"></i>
       </span>
       <span class="post-meta-item-text">Posted on</span>
-      
 
-      <time title="Created: 2021-02-09 14:42:50 / Modified: 16:07:32" itemprop="dateCreated datePublished" datetime="2021-02-09T14:42:50+08:00">2021-02-09</time>
+      <time title="Created: 2021-02-09 14:42:50" itemprop="dateCreated datePublished" datetime="2021-02-09T14:42:50+08:00">2021-02-09</time>
     </span>
+      <span class="post-meta-item">
+        <span class="post-meta-item-icon">
+          <i class="far fa-calendar-check"></i>
+        </span>
+        <span class="post-meta-item-text">Edited on</span>
+        <time title="Modified: 2021-02-10 11:10:53" itemprop="dateModified" datetime="2021-02-10T11:10:53+08:00">2021-02-10</time>
+      </span>
     <span class="post-meta-item">
       <span class="post-meta-item-icon">
         <i class="far fa-folder"></i>
@@ -288,6 +296,13 @@
     </span>
 
   
+    <span class="post-meta-item" title="Views" id="busuanzi_container_page_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="far fa-eye"></i>
+      </span>
+      <span class="post-meta-item-text">Views: </span>
+      <span id="busuanzi_value_page_pv"></span>
+    </span>
 </div>
 
         </div>
@@ -303,7 +318,9 @@
 
 <p>Acceptor线程采用轮询的方式将入站请求公平地发到所有网络线程中，因此，在实际使用过程中，这些线程通常都有相同的几率被分配到待处理请求。这种轮询策略编写简单，同时也避免了请求处理的倾斜，有利于实现较为公平的请求处理调度。</p>
 <p>模型图如下:</p>
-<p><img src="/2021/02/09/kafka/kafka-theory/01-kafka%E5%A6%82%E4%BD%95%E5%A4%84%E7%90%86%E8%AF%B7%E6%B1%82/01.kafka-reactor%E6%A8%A1%E5%9E%8B.png" alt="01.kafka-reactor模型"></p>
+<p><img src="/Users/lijie/WorkSpaces/muzimusi.github.io/source/_posts/kafka/kafka-theory/kafka%E5%A6%82%E4%BD%95%E5%A4%84%E7%90%86%E8%AF%B7%E6%B1%82/01.kafka-reactor%E6%A8%A1%E5%9E%8B.png" alt="01.kafka-reactor模型"></p>
+<img src="/posts/21d2cd27/01.kafka-reactor%E6%A8%A1%E5%9E%8B.png" class title="01.kafka-reactor模型">
+
 <h1 id="2-网络线程接收到请求后，它是怎么处理的呢"><a href="#2-网络线程接收到请求后，它是怎么处理的呢" class="headerlink" title="2. 网络线程接收到请求后，它是怎么处理的呢"></a>2. 网络线程接收到请求后，它是怎么处理的呢</h1><ul>
 <li>网络线程拿到请求后，它不是自己处理，而是将请求放入到一个<strong>共享请求队列</strong>中。</li>
 <li>Broker端还有个<strong>IO线程池</strong>，<strong>负责从该队列中取出请求</strong>，<strong>执行真正的处理</strong>。Broker端参数<strong>num.io.threads</strong>控制了线程池的线程数，<strong>默认值是8。</strong>如果是PRODUCE生产请求，则将消息写入到底层的磁盘日志中；如果是FETCH请求，则从磁盘或页缓存中读取消息。</li>
@@ -311,7 +328,9 @@
 <li>Purgatory的组件（著名的“炼狱”组件），用来<strong>缓存延时请求</strong>（Delayed Request）。<strong>所谓延时请求，就是那些一时未满足条件不能立刻处理的请求</strong>。比如设置了acks=all的PRODUCE请求，一旦设置了acks=all，那么该请求就必须等待ISR中所有副本都接收了消息后才能返回，此时处理该请求的IO线程就必须等待其他Broker的写入结果。当请求不能立刻处理时，它就会暂存在Purgatory中。稍后一旦满足了完成条件，IO线程会继续处理该请求，并将Response放入对应网络线程的响应队列中。</li>
 </ul>
 <p>handle流程图：</p>
-<p><img src="/2021/02/09/kafka/kafka-theory/01-kafka%E5%A6%82%E4%BD%95%E5%A4%84%E7%90%86%E8%AF%B7%E6%B1%82/01.kafka-reactor-handle%E7%BB%86%E8%8A%82.png" alt="kafka-reactor-handle细节"></p>
+<p><img src="/Users/lijie/WorkSpaces/muzimusi.github.io/source/_posts/kafka/kafka-theory/kafka%E5%A6%82%E4%BD%95%E5%A4%84%E7%90%86%E8%AF%B7%E6%B1%82/01.kafka-reactor-handle%E7%BB%86%E8%8A%82.png" alt="kafka-reactor-handle细节"></p>
+<img src="/posts/21d2cd27/01.kafka-reactor-handle%E7%BB%86%E8%8A%82.png" class title="01.kafka-reactor-handle细节.png">
+
 <h1 id="3-设计缺陷"><a href="#3-设计缺陷" class="headerlink" title="3. 设计缺陷"></a>3. 设计缺陷</h1><p><strong>Kafka社区把PRODUCE和FETCH这类请求称为数据类请求，把LeaderAndIsr（</strong>负责更新Leader副本、Follower副本以及ISR集合<strong>）、StopReplica（</strong>负责勒令副本下线<strong>）这类请求称为控制类请求。</strong></p>
 <p>当前这种一视同仁的处理方式对控制类请求是不合理的。因为<strong>控制类请求有这样一种能力：它可以直接令数据类请求失效！</strong></p>
 <p><strong>场景1：</strong></p>
@@ -331,18 +350,21 @@
 
     <footer class="post-footer">
           <div class="post-tags">
-              <a href="/tags/kafka-theory/" rel="tag"># kafka-theory</a>
+              <a href="/tags/kafka%E5%8E%9F%E7%90%86/" rel="tag"># kafka原理</a>
           </div>
 
         
 
           <div class="post-nav">
             <div class="post-nav-item">
-                <a href="/2021/02/09/hello-world/" rel="prev" title="Hello World">
+                <a href="/posts/4a17b156.html" rel="prev" title="Hello World">
                   <i class="fa fa-chevron-left"></i> Hello World
                 </a>
             </div>
             <div class="post-nav-item">
+                <a href="/posts/c8cdf238.html" rel="next" title="高水位和Leader Epoch">
+                  高水位和Leader Epoch <i class="fa fa-chevron-right"></i>
+                </a>
             </div>
           </div>
     </footer>
@@ -395,6 +417,24 @@
   </span>
   <span class="author" itemprop="copyrightHolder">muzimusi</span>
 </div>
+<div class="busuanzi-count">
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="Total Visitors">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="Total Views">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
   <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/muse/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a>
   </div>
 
@@ -422,6 +462,7 @@
 
 
   
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
 
 
 

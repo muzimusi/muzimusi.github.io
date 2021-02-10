@@ -19,7 +19,7 @@
 
 <script class="hexo-configurations">
     var NexT = window.NexT || {};
-    var CONFIG = {"hostname":"muzimusi.github.io","root":"/","scheme":"Muse","version":"8.0.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":false,"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"Searching...","empty":"We didn't find any results for the search: ${query}","hits_time":"${hits} results found in ${time} ms","hits":"${hits} results found"}};
+    var CONFIG = {"hostname":"muzimusi.github.io","root":"/","scheme":"Muse","version":"8.0.0","exturl":false,"sidebar":{"position":"right","display":"post","padding":18,"offset":12},"copycode":false,"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"Searching...","empty":"We didn't find any results for the search: ${query}","hits_time":"${hits} results found in ${time} ms","hits":"${hits} results found"}};
   </script>
 
   <meta property="og:type" content="website">
@@ -189,7 +189,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">2</span>
+          <span class="site-state-item-count">3</span>
           <span class="site-state-item-name">posts</span>
         </a>
       </div>
@@ -237,7 +237,7 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-Hans">
-    <link itemprop="mainEntityOfPage" href="http://muzimusi.github.io/2021/02/09/kafka/kafka-theory/01-kafka%E5%A6%82%E4%BD%95%E5%A4%84%E7%90%86%E8%AF%B7%E6%B1%82/">
+    <link itemprop="mainEntityOfPage" href="http://muzimusi.github.io/posts/c8cdf238.html">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.gif">
@@ -254,7 +254,7 @@
       <header class="post-header">
         <h2 class="post-title" itemprop="name headline">
           
-            <a href="/2021/02/09/kafka/kafka-theory/01-kafka%E5%A6%82%E4%BD%95%E5%A4%84%E7%90%86%E8%AF%B7%E6%B1%82/" class="post-title-link" itemprop="url">01.kafka如何处理请求</a>
+            <a href="/posts/c8cdf238.html" class="post-title-link" itemprop="url">高水位和Leader Epoch</a>
         </h2>
 
         <div class="post-meta-container">
@@ -264,10 +264,16 @@
         <i class="far fa-calendar"></i>
       </span>
       <span class="post-meta-item-text">Posted on</span>
-      
 
-      <time title="Created: 2021-02-09 14:42:50 / Modified: 16:07:32" itemprop="dateCreated datePublished" datetime="2021-02-09T14:42:50+08:00">2021-02-09</time>
+      <time title="Created: 2021-02-09 19:35:48" itemprop="dateCreated datePublished" datetime="2021-02-09T19:35:48+08:00">2021-02-09</time>
     </span>
+      <span class="post-meta-item">
+        <span class="post-meta-item-icon">
+          <i class="far fa-calendar-check"></i>
+        </span>
+        <span class="post-meta-item-text">Edited on</span>
+        <time title="Modified: 2021-02-10 11:06:40" itemprop="dateModified" datetime="2021-02-10T11:06:40+08:00">2021-02-10</time>
+      </span>
     <span class="post-meta-item">
       <span class="post-meta-item-icon">
         <i class="far fa-folder"></i>
@@ -288,11 +294,10 @@
     
     
     <div class="post-body" itemprop="articleBody">
-          <h1 id="1-kafka-reactor模型"><a href="#1-kafka-reactor模型" class="headerlink" title="1. kafka-reactor模型"></a>1. kafka-reactor模型</h1><p><strong>broker端使用reactor模型，接收并处理请求（请求可以来自客户端也可来自controller）。</strong></p>
-<p>Broker端SocketServer组件，类似于Reactor模式中的Dispatcher，它也有对应的Acceptor线程和一个工作线程池（又叫网络线程池）<strong>专门处理”客户端”发送的请求</strong>，Broker端参数num.network.threads，用于调整该网络线程池的线程数。其<strong>默认值是3</strong>。</p>
+          <h1 id="什么是高水位？"><a href="#什么是高水位？" class="headerlink" title="什么是高水位？"></a>什么是高水位？</h1><h2 id="水位线定义"><a href="#水位线定义" class="headerlink" title="水位线定义"></a>水位线定义</h2><p>水位一词多用于流式处理领域，比如，Spark Streaming或Flink框架中都有水位的概念。</p>
           <!--noindex-->
             <div class="post-button">
-              <a class="btn" href="/2021/02/09/kafka/kafka-theory/01-kafka%E5%A6%82%E4%BD%95%E5%A4%84%E7%90%86%E8%AF%B7%E6%B1%82/#more" rel="contents">
+              <a class="btn" href="/posts/c8cdf238.html#more" rel="contents">
                 Read more &raquo;
               </a>
             </div>
@@ -318,7 +323,7 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-Hans">
-    <link itemprop="mainEntityOfPage" href="http://muzimusi.github.io/2021/02/09/hello-world/">
+    <link itemprop="mainEntityOfPage" href="http://muzimusi.github.io/posts/21d2cd27.html">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.gif">
@@ -335,7 +340,7 @@
       <header class="post-header">
         <h2 class="post-title" itemprop="name headline">
           
-            <a href="/2021/02/09/hello-world/" class="post-title-link" itemprop="url">Hello World</a>
+            <a href="/posts/21d2cd27.html" class="post-title-link" itemprop="url">01.kafka如何处理请求</a>
         </h2>
 
         <div class="post-meta-container">
@@ -345,10 +350,103 @@
         <i class="far fa-calendar"></i>
       </span>
       <span class="post-meta-item-text">Posted on</span>
-      
 
-      <time title="Created: 2021-02-09 11:41:13 / Modified: 16:08:19" itemprop="dateCreated datePublished" datetime="2021-02-09T11:41:13+08:00">2021-02-09</time>
+      <time title="Created: 2021-02-09 14:42:50" itemprop="dateCreated datePublished" datetime="2021-02-09T14:42:50+08:00">2021-02-09</time>
     </span>
+      <span class="post-meta-item">
+        <span class="post-meta-item-icon">
+          <i class="far fa-calendar-check"></i>
+        </span>
+        <span class="post-meta-item-text">Edited on</span>
+        <time title="Modified: 2021-02-10 11:10:53" itemprop="dateModified" datetime="2021-02-10T11:10:53+08:00">2021-02-10</time>
+      </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">In</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/kafka%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/" itemprop="url" rel="index"><span itemprop="name">kafka学习笔记</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <h1 id="1-kafka-reactor模型"><a href="#1-kafka-reactor模型" class="headerlink" title="1. kafka-reactor模型"></a>1. kafka-reactor模型</h1><p><strong>broker端使用reactor模型，接收并处理请求（请求可以来自客户端也可来自controller）。</strong></p>
+<p>Broker端SocketServer组件，类似于Reactor模式中的Dispatcher，它也有对应的Acceptor线程和一个工作线程池（又叫网络线程池）<strong>专门处理”客户端”发送的请求</strong>，Broker端参数num.network.threads，用于调整该网络线程池的线程数。其<strong>默认值是3</strong>。</p>
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/posts/21d2cd27.html#more" rel="contents">
+                Read more &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-Hans">
+    <link itemprop="mainEntityOfPage" href="http://muzimusi.github.io/posts/4a17b156.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="muzimusi">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="木子木泗的博客">
+    </span>
+
+    
+    
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/posts/4a17b156.html" class="post-title-link" itemprop="url">Hello World</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">Posted on</span>
+
+      <time title="Created: 2021-02-09 11:41:13" itemprop="dateCreated datePublished" datetime="2021-02-09T11:41:13+08:00">2021-02-09</time>
+    </span>
+      <span class="post-meta-item">
+        <span class="post-meta-item-icon">
+          <i class="far fa-calendar-check"></i>
+        </span>
+        <span class="post-meta-item-text">Edited on</span>
+        <time title="Modified: 2021-02-10 11:02:46" itemprop="dateModified" datetime="2021-02-10T11:02:46+08:00">2021-02-10</time>
+      </span>
     <span class="post-meta-item">
       <span class="post-meta-item-icon">
         <i class="far fa-folder"></i>
@@ -373,7 +471,7 @@
 <h2 id="Quick-Start"><a href="#Quick-Start" class="headerlink" title="Quick Start"></a>Quick Start</h2><h3 id="Create-a-new-post"><a href="#Create-a-new-post" class="headerlink" title="Create a new post"></a>Create a new post</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo new <span class="string">&quot;My New Post&quot;</span></span><br></pre></td></tr></table></figure>
           <!--noindex-->
             <div class="post-button">
-              <a class="btn" href="/2021/02/09/hello-world/#more" rel="contents">
+              <a class="btn" href="/posts/4a17b156.html#more" rel="contents">
                 Read more &raquo;
               </a>
             </div>
@@ -442,6 +540,24 @@
   </span>
   <span class="author" itemprop="copyrightHolder">muzimusi</span>
 </div>
+<div class="busuanzi-count">
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="Total Visitors">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="Total Views">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
   <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/muse/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a>
   </div>
 
@@ -469,6 +585,7 @@
 
 
   
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
 
 
 
