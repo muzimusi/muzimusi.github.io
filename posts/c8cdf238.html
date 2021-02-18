@@ -47,8 +47,16 @@
 <meta property="og:image" content="http://muzimusi.github.io/posts/c8cdf238/%E6%95%B0%E6%8D%AE%E4%B8%8D%E4%B8%80%E8%87%B4(%E7%A6%BB%E6%95%A3).png">
 <meta property="og:image" content="http://muzimusi.github.io/Users/lijie/WorkSpaces/muzimusi.github.io/source/_posts/kafka/kafka-theory/%E9%AB%98%E6%B0%B4%E4%BD%8D%E5%92%8CLeader/%E9%81%BF%E5%85%8D%E6%95%B0%E6%8D%AE%E4%B8%8D%E4%B8%80%E8%87%B4(%E7%A6%BB%E6%95%A3).png">
 <meta property="og:image" content="http://muzimusi.github.io/posts/c8cdf238/%E9%81%BF%E5%85%8D%E6%95%B0%E6%8D%AE%E4%B8%8D%E4%B8%80%E8%87%B4(%E7%A6%BB%E6%95%A3).png">
+<meta property="og:image" content="http://muzimusi.github.io/Users/lijie/WorkSpaces/muzimusi.github.io/source/_posts/kafka/kafka-theory/%E9%AB%98%E6%B0%B4%E4%BD%8D%E5%92%8CLeader/%E4%B8%A2%E5%A4%B1%E6%95%B0%E6%8D%AE2.png">
+<meta property="og:image" content="http://muzimusi.github.io/posts/c8cdf238/%E4%B8%A2%E5%A4%B1%E6%95%B0%E6%8D%AE2.png">
+<meta property="og:image" content="http://muzimusi.github.io/Users/lijie/WorkSpaces/muzimusi.github.io/source/_posts/kafka/kafka-theory/%E9%AB%98%E6%B0%B4%E4%BD%8D%E5%92%8CLeader/%E9%81%BF%E5%85%8D%E4%B8%A2%E5%A4%B1%E6%95%B0%E6%8D%AE2.png">
+<meta property="og:image" content="http://muzimusi.github.io/posts/c8cdf238/%E9%81%BF%E5%85%8D%E4%B8%A2%E5%A4%B1%E6%95%B0%E6%8D%AE2.png">
+<meta property="og:image" content="http://muzimusi.github.io/Users/lijie/WorkSpaces/muzimusi.github.io/source/_posts/kafka/kafka-theory/%E9%AB%98%E6%B0%B4%E4%BD%8D%E5%92%8CLeader/%E6%95%B0%E6%8D%AE%E4%B8%8D%E4%B8%80%E8%87%B4(%E7%A6%BB%E6%95%A3)2.png">
+<meta property="og:image" content="http://muzimusi.github.io/posts/c8cdf238/%E6%95%B0%E6%8D%AE%E4%B8%8D%E4%B8%80%E8%87%B4(%E7%A6%BB%E6%95%A3)2.png">
+<meta property="og:image" content="http://muzimusi.github.io/Users/lijie/WorkSpaces/muzimusi.github.io/source/_posts/kafka/kafka-theory/%E9%AB%98%E6%B0%B4%E4%BD%8D%E5%92%8CLeader/%E9%81%BF%E5%85%8D%E6%95%B0%E6%8D%AE%E4%B8%8D%E4%B8%80%E8%87%B4(%E7%A6%BB%E6%95%A3)2.png">
+<meta property="og:image" content="http://muzimusi.github.io/posts/c8cdf238/%E9%81%BF%E5%85%8D%E6%95%B0%E6%8D%AE%E4%B8%8D%E4%B8%80%E8%87%B4(%E7%A6%BB%E6%95%A3)2.png">
 <meta property="article:published_time" content="2021-02-09T11:35:48.000Z">
-<meta property="article:modified_time" content="2021-02-17T09:41:48.224Z">
+<meta property="article:modified_time" content="2021-02-18T04:11:48.001Z">
 <meta property="article:author" content="muzimusi">
 <meta property="article:tag" content="kafka原理">
 <meta name="twitter:card" content="summary">
@@ -200,7 +208,7 @@
 
       <!--noindex-->
       <section class="post-toc-wrap sidebar-panel">
-          <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%BB%80%E4%B9%88%E6%98%AF%E9%AB%98%E6%B0%B4%E4%BD%8D%EF%BC%9F"><span class="nav-number">1.</span> <span class="nav-text">什么是高水位？</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%B0%B4%E4%BD%8D%E7%BA%BF%E5%AE%9A%E4%B9%89"><span class="nav-number">1.1.</span> <span class="nav-text">水位线定义</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#kafka%E4%B8%AD%E7%9A%84%E6%B0%B4%E4%BD%8D%E7%BA%BF"><span class="nav-number">1.2.</span> <span class="nav-text">kafka中的水位线</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%AB%98%E6%B0%B4%E4%BD%8D%E7%9A%84%E4%BD%9C%E7%94%A8"><span class="nav-number">1.3.</span> <span class="nav-text">高水位的作用</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%AB%98%E6%B0%B4%E4%BD%8D%E6%9B%B4%E6%96%B0%E6%9C%BA%E5%88%B6"><span class="nav-number">1.4.</span> <span class="nav-text">高水位更新机制</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%89%AF%E6%9C%AC%E5%90%8C%E6%AD%A5%E6%9C%BA%E5%88%B6%E5%85%A8%E6%B5%81%E7%A8%8B%E8%A7%A3%E6%9E%90"><span class="nav-number">1.5.</span> <span class="nav-text">副本同步机制全流程解析</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Leader-Epoch"><span class="nav-number">2.</span> <span class="nav-text">Leader Epoch</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%95%B0%E6%8D%AE%E4%B8%A2%E5%A4%B1"><span class="nav-number">2.1.</span> <span class="nav-text">数据丢失</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%95%B0%E6%8D%AE%E4%B8%8D%E4%B8%80%E8%87%B4"><span class="nav-number">2.2.</span> <span class="nav-text">数据不一致</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-number">2.3.</span> <span class="nav-text">总结</span></a></li></ol></li></ol></div>
+          <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%BB%80%E4%B9%88%E6%98%AF%E9%AB%98%E6%B0%B4%E4%BD%8D%EF%BC%9F"><span class="nav-number">1.</span> <span class="nav-text">什么是高水位？</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%B0%B4%E4%BD%8D%E7%BA%BF%E5%AE%9A%E4%B9%89"><span class="nav-number">1.1.</span> <span class="nav-text">水位线定义</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#kafka%E4%B8%AD%E7%9A%84%E6%B0%B4%E4%BD%8D%E7%BA%BF"><span class="nav-number">1.2.</span> <span class="nav-text">kafka中的水位线</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%AB%98%E6%B0%B4%E4%BD%8D%E7%9A%84%E4%BD%9C%E7%94%A8"><span class="nav-number">1.3.</span> <span class="nav-text">高水位的作用</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%AB%98%E6%B0%B4%E4%BD%8D%E6%9B%B4%E6%96%B0%E6%9C%BA%E5%88%B6"><span class="nav-number">1.4.</span> <span class="nav-text">高水位更新机制</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%89%AF%E6%9C%AC%E5%90%8C%E6%AD%A5%E6%9C%BA%E5%88%B6%E5%85%A8%E6%B5%81%E7%A8%8B%E8%A7%A3%E6%9E%90"><span class="nav-number">1.5.</span> <span class="nav-text">副本同步机制全流程解析</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Leader-Epoch"><span class="nav-number">2.</span> <span class="nav-text">Leader Epoch</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#leader-epoch-%E4%BF%9D%E5%AD%98%E6%9C%BA%E5%88%B6"><span class="nav-number">2.1.</span> <span class="nav-text">leader epoch 保存机制</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#leader-epoch-%E5%B7%A5%E4%BD%9C%E6%9C%BA%E5%88%B6%EF%BC%9A"><span class="nav-number">2.2.</span> <span class="nav-text">leader epoch 工作机制：</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%95%B0%E6%8D%AE%E4%B8%A2%E5%A4%B1%E4%B8%8E%E8%A7%84%E9%81%BF"><span class="nav-number">2.3.</span> <span class="nav-text">数据丢失与规避</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%B8%A2%E5%A4%B1%E6%95%B0%E6%8D%AE"><span class="nav-number">2.3.1.</span> <span class="nav-text">丢失数据</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#leader-epoch-%E8%A7%A3%E5%86%B3"><span class="nav-number">2.3.2.</span> <span class="nav-text">leader epoch 解决</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%95%B0%E6%8D%AE%E4%B8%8D%E4%B8%80%E8%87%B4%E4%B8%8E%E8%A7%84%E9%81%BF"><span class="nav-number">2.4.</span> <span class="nav-text">数据不一致与规避</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%95%B0%E6%8D%AE%E4%B8%8D%E4%B8%80%E8%87%B4"><span class="nav-number">2.4.1.</span> <span class="nav-text">数据不一致</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#leader-epoch-%E8%A7%A3%E5%86%B3-1"><span class="nav-number">2.4.2.</span> <span class="nav-text">leader epoch 解决</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%95%B0%E6%8D%AE%E4%B8%A2%E5%A4%B1%E4%B8%8E%E8%A7%84%E9%81%BF2"><span class="nav-number">2.5.</span> <span class="nav-text">数据丢失与规避2</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%B8%A2%E5%A4%B1%E6%95%B0%E6%8D%AE-1"><span class="nav-number">2.5.1.</span> <span class="nav-text">丢失数据</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#leader-epoch-%E8%A7%A3%E5%86%B3-2"><span class="nav-number">2.5.2.</span> <span class="nav-text">leader epoch 解决</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%95%B0%E6%8D%AE%E4%B8%8D%E4%B8%80%E8%87%B4%E4%B8%8E%E8%A7%84%E9%81%BF2"><span class="nav-number">2.6.</span> <span class="nav-text">数据不一致与规避2</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%95%B0%E6%8D%AE%E4%B8%8D%E4%B8%80%E8%87%B4-1"><span class="nav-number">2.6.1.</span> <span class="nav-text">数据不一致</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#leader-epoch-%E8%A7%A3%E5%86%B3-3"><span class="nav-number">2.6.2.</span> <span class="nav-text">leader epoch 解决</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-number">2.7.</span> <span class="nav-text">总结</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E9%97%AE%E9%A2%98"><span class="nav-number">3.</span> <span class="nav-text">问题</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E8%B5%84%E6%96%99"><span class="nav-number">4.</span> <span class="nav-text">资料</span></a></li></ol></div>
       </section>
       <!--/noindex-->
 
@@ -297,7 +305,7 @@
           <i class="far fa-calendar-check"></i>
         </span>
         <span class="post-meta-item-text">更新于</span>
-        <time title="Modified: 2021-02-17 17:41:48" itemprop="dateModified" datetime="2021-02-17T17:41:48+08:00">2021-02-17</time>
+        <time title="Modified: 2021-02-18 12:11:48" itemprop="dateModified" datetime="2021-02-18T12:11:48+08:00">2021-02-18</time>
       </span>
     <span class="post-meta-item">
       <span class="post-meta-item-icon">
@@ -324,14 +332,14 @@
         <i class="far fa-file-word"></i>
       </span>
       <span class="post-meta-item-text">字数统计: </span>
-      <span>5.5k</span>
+      <span>9.4k</span>
     </span>
     <span class="post-meta-item" title="阅读时长">
       <span class="post-meta-item-icon">
         <i class="far fa-clock"></i>
       </span>
       <span class="post-meta-item-text">阅读时长 &asymp;</span>
-      <span>5 mins.</span>
+      <span>9 mins.</span>
     </span>
 </div>
 
@@ -377,8 +385,9 @@
 <p>下面这张图展示了多个与高水位相关的Kafka术语，和一些常见的误区。<br><img src="/Users/lijie/WorkSpaces/muzimusi.github.io/source/_posts/kafka/kafka-theory/%E9%AB%98%E6%B0%B4%E4%BD%8D%E5%92%8CLeader/HW.png" alt="HW"></p>
 <img src="/posts/c8cdf238/HW.png" class title="HW.png">
 
+<p><strong>什么是已提交的消息：</strong>当Kafka的若干个Broker（ack控制）成功地接收到一条消息并写入到日志文件后（准确讲是pageCache，pageCache落盘完全有OS决定，不有kafka控制），它们会告诉生产者程序这条消息已成功提交。此时，这条消息在Kafka看来就正式变为“已提交”消息了（HW以下的消息）。</p>
 <p><strong>高水位和LEO是副本对象的两个重要属性。</strong></p>
-<p>在分区高水位以下的消息被认为是已提交消息，反之就是未提交消息。消费者只能消费已提交消息，即图中位移小于8的所有消息。注意，这里我们不讨论Kafka事务，因为事务机制会影响消费者所能看到的消息的范围，它不只是简单依赖高水位来判断。它依靠一个名为LSO（Log Stable Offset）的位移值来判断事务型消费者的可见性。</p>
+<p>在分区<strong>高水位以下</strong>的消息被认为是已提交消息，反之就是未提交消息。消费者只能消费已提交消息，即图中位移小于8的所有消息。注意，这里我们不讨论Kafka事务，因为事务机制会影响消费者所能看到的消息的范围，它不只是简单依赖高水位来判断。它依靠一个名为LSO（Log Stable Offset）的位移值来判断事务型消费者的可见性。</p>
 <p>Log End Offset，简写是LEO。它表示副本写入下一条消息的位移值。注意，数字15所在的方框是虚线，这就说明，这个副本当前只有15条消息，位移值是从0到14，下一条新消息的位移是15。显然，介于高水位和LEO之间的消息就属于未提交消息。这也从侧面告诉了我们一个重要的事实，那就是：<strong>同一个副本对象，其高水位值不会大于LEO值</strong>。</p>
 <p>Kafka所有副本都有对应的高水位和LEO值，不仅仅是Leader副本。只不过Leader副本比较特殊，Kafka使用Leader副本的高水位来定义所在分区的高水位。</p>
 <blockquote>
@@ -387,7 +396,8 @@
 <li>位移值等于高水位的消息也属于未提交消息。也就是说，高水位上的消息是不能被消费者消费的。</li>
 <li>同一个副本对象，其高水位值不会大于LEO值。</li>
 <li>分区的高水位就是其Leader副本的高水位。</li>
-<li>在Leader副本所在的Broker上，还保存了其他Follower副本的LEO值</li>
+<li>在Leader副本所在的Broker上，还保存了其他Follower副本的LEO<strong>值</strong></li>
+<li>即使是未提交的消息，也有可能已经完成落盘。</li>
 </ol>
 </blockquote>
 <h2 id="高水位更新机制"><a href="#高水位更新机制" class="headerlink" title="高水位更新机制"></a>高水位更新机制</h2><p>每个副本对象都保存了一组高水位值<code>HW</code>和<code>LEO</code>值，实际上，Leader副本所在的Broker上，还保存了其他Follower副本的<code>LEO</code>值，如下图所示：</p>
@@ -468,30 +478,63 @@
 </ol>
 <p>假设有两对值：(0, 0) (1, 120)</p>
 <p>则表示第一个leader从位移0开始写入消息；共写了120条[0, 119]；而第二个leader版本号是1，从位移120处开始写入消</p>
-<p>Kafka Broker会在内存中为每个分区都缓存Leader Epoch数据，同时它还会定期地将这些信息持久化到一个checkpoint文件中。当Leader副本写入消息到磁盘时，Broker会尝试更新这部分缓存。如果该Leader是首次写入消息，那么Broker会向缓存中增加一个Leader Epoch条目，否则就不做更新。这样，每次有Leader变更时，新的Leader副本会查询这部分缓存，取出对应的Leader Epoch的起始位移，以避免数据丢失和不一致的情况。</p>
-<h2 id="数据丢失"><a href="#数据丢失" class="headerlink" title="数据丢失"></a>数据丢失</h2><p><strong>先来看一下，单纯依赖高水位是怎么造成数据丢失的。</strong><br><img src="/Users/lijie/WorkSpaces/muzimusi.github.io/source/_posts/kafka/kafka-theory/%E9%AB%98%E6%B0%B4%E4%BD%8D%E5%92%8CLeader/%E4%B8%A2%E5%A4%B1%E6%95%B0%E6%8D%AE.png" alt="丢失数据"></p>
+<h2 id="leader-epoch-保存机制"><a href="#leader-epoch-保存机制" class="headerlink" title="leader epoch 保存机制"></a>leader epoch 保存机制</h2><p>Kafka Broker会在内存中为每个分区都缓存Leader Epoch数据，同时它还会定期地将这些信息持久化到一个checkpoint文件中（在每个副本日志目录下都创建一个 leader-epoch-checkpoint 文件，用于保存 leader 的 epoch 信息）。<strong>当Leader副本写入消息到磁盘时，Broker会尝试更新这部分缓存</strong>。如果该Leader是<strong>首次写入消息</strong>，那么Broker会向缓存中增加一个Leader Epoch条目，否则就不做更新。这样，每次有Leader变更时，新的Leader副本会查询这部分缓存，取出对应的Leader Epoch的起始位移，以避免数据丢失和不一致的情况。</p>
+<h2 id="leader-epoch-工作机制："><a href="#leader-epoch-工作机制：" class="headerlink" title="leader epoch 工作机制："></a>leader epoch 工作机制：</h2><p><strong>当副本成为 leader 时</strong>：</p>
+<p>这时，如果此时生产者有新消息发送过来（首次写入），会首先将新的 leader epoch 以及 LEO 添加到 leader-epoch-checkpoint 文件中。</p>
+<p><strong>当副本变成 follower 时</strong>：</p>
+<p>发送 LeaderEpochRequest 请求给 leader 副本，该请求包括了 follower 中最新的 epoch 版本；</p>
+<p>leader 返回给 follower 的响应中包含了一个 <strong>LastOffset</strong>，如果 follower last epoch = leader last epoch，则 LastOffset = leader LEO，否则取大于 follower last epoch 中最小的 leader epoch 的 start offset 值，举个例子：假设 follower last epoch = 1，此时 leader 有 (1, 20) (2, 80) (3, 120)，则 LastOffset = 80；</p>
+<p>follower 拿到 LastOffset 之后，会对比当前 LEO 值是否大于 LastOffset，<strong>如果当前 LEO 大于 LastOffset，则从 LastOffset 截断日志</strong>；</p>
+<p>follower 开始发送 fetch 请求给 leader 保持消息同步。</p>
+<h2 id="数据丢失与规避"><a href="#数据丢失与规避" class="headerlink" title="数据丢失与规避"></a>数据丢失与规避</h2><h3 id="丢失数据"><a href="#丢失数据" class="headerlink" title="丢失数据"></a>丢失数据</h3><p><strong>先来看一下，单纯依赖高水位是怎么造成数据丢失的。</strong><br><img src="/Users/lijie/WorkSpaces/muzimusi.github.io/source/_posts/kafka/kafka-theory/%E9%AB%98%E6%B0%B4%E4%BD%8D%E5%92%8CLeader/%E4%B8%A2%E5%A4%B1%E6%95%B0%E6%8D%AE.png" alt="丢失数据"></p>
 <img src="/posts/c8cdf238/%E4%B8%A2%E5%A4%B1%E6%95%B0%E6%8D%AE.png" class title="丢失数据">
 
 <p>开始时，副本A和副本B都处于正常状态，A是Leader副本。某个使用了默认acks设置的生产者程序向A发送了两条消息，A全部写入成功，此时Kafka会通知生产者说两条消息全部发送成功。</p>
 <p>假设Leader和Follower都写入了这两条消息，而且Leader副本的高水位也已经更新了，但Follower副本高水位还未更新（这是可能出现的。Follower端高水位的更新与Leader端有时间错配）。倘若此时副本B所在的Broker宕机，当它重启回来后，副本B会执行日志截断操作（单纯依赖HW值），将LEO值调整为之前的高水位值，也就是1。这就是说，位移值为1的那条消息被副本B从磁盘中删除，此时副本B的底层磁盘文件中只保存有1条消息，即位移值为0的那条消息。</p>
 <p>当执行完截断操作后，副本B开始从A拉取消息，执行正常的消息同步。如果就在这个节骨眼上，副本A所在的Broker宕机了，那么Kafka就别无选择，只能让副本B成为新的Leader，此时，当A回来后，需要执行相同的日志截断操作，即将高水位调整为与B相同的值，也就是1。这样操作之后，位移值为1的那条消息就从这两个副本中被永远地抹掉了。这就是这张图要展示的数据丢失场景。</p>
 <p>严格来说，这个场景发生的前提是Broker端参数min.insync.replicas设置为1。此时一旦消息被写入到Leader副本的磁盘，就会被认为是“已提交状态”，但现有的时间错配问题导致Follower端的高水位更新是有滞后的（延迟一轮FETCH RPC更新HW值的设计使得follower HW值是异步延迟更新的）。如果在这个短暂的滞后时间窗口内，接连发生Broker宕机，那么这类数据的丢失就是不可避免的。</p>
-<p><strong>现在，来看下如何利用Leader Epoch机制来规避这种数据丢失，如下图。</strong></p>
+<h3 id="leader-epoch-解决"><a href="#leader-epoch-解决" class="headerlink" title="leader epoch 解决"></a>leader epoch 解决</h3><p><strong>现在，来看下如何利用Leader Epoch机制来规避这种数据丢失，如下图。</strong></p>
 <p><img src="/Users/lijie/WorkSpaces/muzimusi.github.io/source/_posts/kafka/kafka-theory/%E9%AB%98%E6%B0%B4%E4%BD%8D%E5%92%8CLeader/%E9%81%BF%E5%85%8D%E4%B8%A2%E5%A4%B1%E6%95%B0%E6%8D%AE.png" alt="避免丢失数据"></p>
 <img src="/posts/c8cdf238/%E9%81%BF%E5%85%8D%E4%B8%A2%E5%A4%B1%E6%95%B0%E6%8D%AE.png" class title="避免丢失数据">
 
-<p>场景和之前大致是类似的，只不过引用Leader Epoch机制后，Follower副本B重启回来后，需要向A发送一个特殊的请求（OffsetsForLeaderEpochRequest）去<strong>获取Leader的LEO值</strong>。在这个例子中，该值为2。当获知到Leader LEO=2后，B发现该LEO值不比它自己的LEO值小，而且缓存中也没有保存任何起始位移值 &gt; 2的Epoch条目(leader LEO &gt;= follower LEO &amp;&amp;  leader LEO &gt;= follower缓存的epoch offset)，因此B无需执行任何日志截断操作（若leader LEO &lt; follower LEO || leader LEO &lt; 缓存中保存任何起始位移值 说明follower需要截断多余日志才能与leader保持一致；）。这是对高水位机制的一个明显改进，即副本是否执行日志截断不再依赖于高水位进行判断。</p>
+<p>场景和之前大致是类似的，只不过引用Leader Epoch机制后，Follower副本B重启回来后，需要向A发送一个特殊的请求（OffsetsForLeaderEpochRequest）去<strong>获取Leader的LEO值</strong>（由于 A 还没追加消息，此时 epoch = request epoch = 0，因此返回 LastOffset = leader LEO = 2 给 B），在这个例子中，该值为2。当获知到Leader LEO=2（LastOffset）后，B发现该LEO值不比它自己的LEO值小，而且缓存中也没有保存任何起始位移值 &gt; 2的Epoch条目(leader LEO &gt;= follower LEO &amp;&amp;  leader LEO &gt;= follower缓存的epoch offset)，因此B无需执行任何日志截断操作（若leader LEO &lt; follower LEO || leader LEO &lt; 缓存中保存任何起始位移值 说明follower需要截断多余日志才能与leader保持一致；）。这是对高水位机制的一个明显改进，即副本是否执行日志截断不再依赖于高水位进行判断。</p>
 <p>现在，副本A宕机了，B成为Leader。同样地，当A重启回来后，执行与B相同的逻辑判断，发现也不用执行日志截断，至此位移值为1的那条消息在两个副本中均得到保留。后面当生产者程序向B写入新消息时，副本B所在的Broker缓存中，会生成新的Leader Epoch条目：[Epoch=1, Offset=2]。之后，副本B会使用这个条目帮助判断后续是否执行日志截断操作。这样，通过Leader Epoch机制，Kafka完美地规避了这种数据丢失场景。</p>
-<h2 id="数据不一致"><a href="#数据不一致" class="headerlink" title="数据不一致"></a>数据不一致</h2><p>除了可能造成的数据丢失以外，这种设计还有一个潜在的问题，即造成leader端log和follower端log的数据不一致。比如leader端保存的记录序列是r1,r2,r3,r4,r5,….；而follower端保存的序列可能是r1,r3,r4,r5,r6…。这也是非法的场景，因为顾名思义，follower必须追随leader，完整地备份leader端的数据。</p>
-<p><strong>先来看一下，单纯依赖高水位是怎么造成数据不一致（离散）的。</strong><br><img src="/Users/lijie/WorkSpaces/muzimusi.github.io/source/_posts/kafka/kafka-theory/%E9%AB%98%E6%B0%B4%E4%BD%8D%E5%92%8CLeader/%E6%95%B0%E6%8D%AE%E4%B8%8D%E4%B8%80%E8%87%B4(%E7%A6%BB%E6%95%A3).png" alt="数据不一致(离散)"></p>
+<h2 id="数据不一致与规避"><a href="#数据不一致与规避" class="headerlink" title="数据不一致与规避"></a>数据不一致与规避</h2><p>除了可能造成的数据丢失以外，这种设计还有一个潜在的问题，即造成leader端log和follower端log的数据不一致。比如leader端保存的记录序列是r1,r2,r3,r4,r5,….；而follower端保存的序列可能是r1,r3,r4,r5,r6…。这也是非法的场景，因为顾名思义，follower必须追随leader，完整地备份leader端的数据。</p>
+<h3 id="数据不一致"><a href="#数据不一致" class="headerlink" title="数据不一致"></a>数据不一致</h3><p><strong>先来看一下，单纯依赖高水位是怎么造成数据不一致（离散）的。</strong><br><img src="/Users/lijie/WorkSpaces/muzimusi.github.io/source/_posts/kafka/kafka-theory/%E9%AB%98%E6%B0%B4%E4%BD%8D%E5%92%8CLeader/%E6%95%B0%E6%8D%AE%E4%B8%8D%E4%B8%80%E8%87%B4(%E7%A6%BB%E6%95%A3).png" alt="数据不一致(离散)"></p>
 <img src="/posts/c8cdf238/%E6%95%B0%E6%8D%AE%E4%B8%8D%E4%B8%80%E8%87%B4(%E7%A6%BB%E6%95%A3).png" class title="数据不一致(离散)">
 
 <p>这种情况的初始状态与数据丢失场景有一些不同的：A依然是leader，A的log写入了2条消息，但B的log只写入了1条消息。分区HW更新到2，但B的HW还是1，同时producer端的min.insync.replicas = 1。</p>
 <p>此时如果<strong>A和B所在机器同时挂掉</strong>，然后假设<strong>B先重启回来，因此成为leader</strong>，分区HW = 1。假设此时producer发送了第3条消息(绿色框表示)给B，于是B的log中offset = 1的消息变成了绿色框表示的消息，同时分区HW更新到2（A还没有回来，就B一个副本，故可以直接更新HW而不用理会A）之后A重启回来，需要执行日志截断，但发现此时分区HW=2而A之前的HW值也是2，故不做任何调整。此后A和B将以这种状态继续正常工作。</p>
 <p>显然，这种场景下，A和B底层log中保存在offset = 1的消息是不同的记录，从而引发不一致的情形出现。</p>
-<p><strong>现在，来看下如何利用Leader Epoch机制来规避这种数据不一致，如下图。</strong><br><img src="/Users/lijie/WorkSpaces/muzimusi.github.io/source/_posts/kafka/kafka-theory/%E9%AB%98%E6%B0%B4%E4%BD%8D%E5%92%8CLeader/%E9%81%BF%E5%85%8D%E6%95%B0%E6%8D%AE%E4%B8%8D%E4%B8%80%E8%87%B4(%E7%A6%BB%E6%95%A3).png" alt="避免数据不一致(离散)"></p>
+<h3 id="leader-epoch-解决-1"><a href="#leader-epoch-解决-1" class="headerlink" title="leader epoch 解决"></a>leader epoch 解决</h3><p><strong>现在，来看下如何利用Leader Epoch机制来规避这种数据不一致，如下图。</strong><br><img src="/Users/lijie/WorkSpaces/muzimusi.github.io/source/_posts/kafka/kafka-theory/%E9%AB%98%E6%B0%B4%E4%BD%8D%E5%92%8CLeader/%E9%81%BF%E5%85%8D%E6%95%B0%E6%8D%AE%E4%B8%8D%E4%B8%80%E8%87%B4(%E7%A6%BB%E6%95%A3).png" alt="避免数据不一致(离散)"></p>
 <img src="/posts/c8cdf238/%E9%81%BF%E5%85%8D%E6%95%B0%E6%8D%AE%E4%B8%8D%E4%B8%80%E8%87%B4(%E7%A6%BB%E6%95%A3).png" class title="避免数据不一致(离散)">
 
+<h2 id="数据丢失与规避2"><a href="#数据丢失与规避2" class="headerlink" title="数据丢失与规避2"></a>数据丢失与规避2</h2><p>leader 中保存的 remote LEO 值的更新总是需要额外一轮 fetch RPC 请求才能完成，这意味着在 leader 切换过程中，会存在数据丢失以及数据不一致的问题。</p>
+<h3 id="丢失数据-1"><a href="#丢失数据-1" class="headerlink" title="丢失数据"></a>丢失数据</h3><p><img src="/Users/lijie/WorkSpaces/muzimusi.github.io/source/_posts/kafka/kafka-theory/%E9%AB%98%E6%B0%B4%E4%BD%8D%E5%92%8CLeader/%E4%B8%A2%E5%A4%B1%E6%95%B0%E6%8D%AE2.png" alt="丢失数据"></p>
+<img src="/posts/c8cdf238/%E4%B8%A2%E5%A4%B1%E6%95%B0%E6%8D%AE2.png" class title="丢失数据">
+
+<p>leader 中的 HW 值是在 follower 下一轮 fetch RPC 请求中完成更新的，如上图所示，有副本 A 和 B，其中 B 为 leader 副本，A 为 follower 副本，在 A 进行第二段 fetch 请求，并接收到响应之后，此时 B 已经将 HW 更新为 2，如果这是 A 还没处理完响应就崩溃了，即 follower 没有及时更新 HW 值，A 重启时，会自动将 LEO 值调整到之前的 HW 值，即会进行日志截断，接着会向 B 发送 fetch 请求，但很不幸的是此时 B 也发生宕机了，Kafka 会将 A 选举为新的分区 Leader。当 B 重启后，会从 向 A 发送 fetch 请求，收到 fetch 响应后，拿到 HW 值，并更新本地 HW 值，此时 HW 被调整为 1（之前是 2），这时 B 会做日志截断，因此，offsets = 1 的消息被永久地删除了。</p>
+<p>问题1: follower 副本为什么要进行日志截断？</p>
+<blockquote>
+<p>这是由于消息会先记录到 leader，follower 再从 leader 中拉取消息进行同步，这就导致 leader LEO 会比 follower 的要大（follower 之间的 offset 也不尽相同，虽然最终会一致，但过程中会有差异），假设此时出现 leader 切换，有可能选举了一个 LEO 较小的 follower 成为新的 leader，这时该副本的 LEO 就会成为新的标准，这就会导致 follower LEO 值有可能会比 leader LEO 值要大的情况，因此 follower 在进行同步之前，需要从 leader 获取 LastOffset 的值（该值后面会有解释），如果 LastOffset 小于 当前 LEO，则需要进行日志截断，然后再从 leader 拉取数据实现同步。</p>
+</blockquote>
+<p>问题2: 日志截断会不会造成数据丢失？</p>
+<blockquote>
+<p>HW 值以上的消息是没有“已提交”或“已备份”的，因此消息也是对消费者不可见，即这些消息不对用户作承诺，也即是说从 HW 值截断日志，并不会导致数据丢失（承诺用户范围内）。</p>
+</blockquote>
+<h3 id="leader-epoch-解决-2"><a href="#leader-epoch-解决-2" class="headerlink" title="leader epoch 解决"></a>leader epoch 解决</h3><p><img src="/Users/lijie/WorkSpaces/muzimusi.github.io/source/_posts/kafka/kafka-theory/%E9%AB%98%E6%B0%B4%E4%BD%8D%E5%92%8CLeader/%E9%81%BF%E5%85%8D%E4%B8%A2%E5%A4%B1%E6%95%B0%E6%8D%AE2.png" alt="避免丢失数据2"></p>
+<img src="/posts/c8cdf238/%E9%81%BF%E5%85%8D%E4%B8%A2%E5%A4%B1%E6%95%B0%E6%8D%AE2.png" class title="避免丢失数据2">
+<p>如上图所示，A 重启之后，发送 LeaderEpochRequest 请求给 B，由于 B 还没追加消息，此时 epoch = request epoch = 0，因此返回 LastOffset = leader LEO = 2 给 A，A 拿到 LastOffset 之后，发现等于当前 LEO 值，故不用进行日志截断。就在这时 B 宕机了，A 成为 leader，在 B 启动回来后，会重复 A 的动作，同样不需要进行日志截断，数据没有丢失。</p>
+<h2 id="数据不一致与规避2"><a href="#数据不一致与规避2" class="headerlink" title="数据不一致与规避2"></a>数据不一致与规避2</h2><p>leader 中保存的 remote LEO 值的更新总是需要额外一轮 fetch RPC 请求才能完成，这意味着在 leader 切换过程中，会存在数据丢失以及数据不一致的问题。</p>
+<h3 id="数据不一致-1"><a href="#数据不一致-1" class="headerlink" title="数据不一致"></a>数据不一致</h3><p><img src="/Users/lijie/WorkSpaces/muzimusi.github.io/source/_posts/kafka/kafka-theory/%E9%AB%98%E6%B0%B4%E4%BD%8D%E5%92%8CLeader/%E6%95%B0%E6%8D%AE%E4%B8%8D%E4%B8%80%E8%87%B4(%E7%A6%BB%E6%95%A3)2.png" alt="数据不一致(离散)2"></p>
+<img src="/posts/c8cdf238/%E6%95%B0%E6%8D%AE%E4%B8%8D%E4%B8%80%E8%87%B4(%E7%A6%BB%E6%95%A3)2.png" class title="数据不一致(离散)">
+
+<p>以上情况，需要满足以下其中一个条件才会发生：</p>
+<p>分区有两个副本，其中 A 为 Leader 副本，B 为 follower 副本，A 已经写入两条消息，且 HW 更新到 2，B 只写了 1 条消息，HW 为 1，此时 A 和 B 同时宕机，B 先重启，B 成为了 leader 副本，这时生产者发送了一条消息，保存到 B 中，由于此时分区只有 B，B 在写入消息时把 HW 更新到 2，就在这时候 A 重新启动，发现 leader HW 为 2，跟自己的 HW 一样，因此没有执行日志截断，这就造成了 A 的 offset=1 的日志与 B 的 offset=1 的日志不一样的现象。</p>
+<h3 id="leader-epoch-解决-3"><a href="#leader-epoch-解决-3" class="headerlink" title="leader epoch 解决"></a>leader epoch 解决</h3><p><img src="/Users/lijie/WorkSpaces/muzimusi.github.io/source/_posts/kafka/kafka-theory/%E9%AB%98%E6%B0%B4%E4%BD%8D%E5%92%8CLeader/%E9%81%BF%E5%85%8D%E6%95%B0%E6%8D%AE%E4%B8%8D%E4%B8%80%E8%87%B4(%E7%A6%BB%E6%95%A3)2.png" alt="避免数据不一致(离散)"></p>
+<img src="/posts/c8cdf238/%E9%81%BF%E5%85%8D%E6%95%B0%E6%8D%AE%E4%B8%8D%E4%B8%80%E8%87%B4(%E7%A6%BB%E6%95%A3)2.png" class title="避免数据不一致(离散)2">
+
+<p>如上图所示，A 和 B 同时宕机后，B 先重启回来成为分区 leader，这时候生产者发送了一条消息过来，leader epoch 更新到 1，此时 A 启动回来后，发送 LeaderEpochRequest（follower epoch = 0） 给 B，B 判断 follower epoch 不等于 最新的 epoch，于是找到大于 follower epoch 最小的 epoch = 1，即 LastOffset = epoch start offset = 1，A 拿到 LastOffset 后，判断小于当前 LEO 值，于是从 LastOffset 位置进行日志截断，接着开始发送 fetch 请求给 B 开始同步消息，避免了消息不一致/离散的问题。</p>
 <h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>造成上述两个问题的根本原因，在于：</p>
 <blockquote>
 <ol>
@@ -500,6 +543,45 @@
 </ol>
 </blockquote>
 <p>但HW值的更新是异步延迟的，特别是需要额外的FETCH请求处理流程才能更新，故这中间发生的任何崩溃都可能导致HW值的过期。</p>
+<h1 id="问题"><a href="#问题" class="headerlink" title="问题"></a>问题</h1><ol>
+<li><p>为什么broker重启要进行日志截断，触发日志截断的前提是什么？目的是什么？</p>
+<blockquote>
+<p>这是老版本的设计，会依据HW做截断依据。<br>broker崩溃前可能写入了部分不完整的消息。这部分数据显然不能算做成功提交，因此在重启回来后要执行截断操作，将底层日志调整回到合法的状态上。</p>
+</blockquote>
+</li>
+<li><p>为什么epoch 场景下，b回来时发现不用截断日志</p>
+<blockquote>
+<p>因为不再使用hw值做截断依据了</p>
+</blockquote>
+</li>
+<li><p>acks=all,是代表同步到所有isr中broker的pagecache中还是磁盘？min.insync.replicas是配合acks=all来使用的，是一个保证消息可靠性的配置，比如设置为2，是代表在isr中至少两个broker上写入消息，这个写入是写入pagecache中还是磁盘中？如果都是写入pagecache中，kafka是有异步线程来定时从pagecache中拉消息写入磁盘吗？</p>
+<blockquote>
+<p>可以认为都是pagecache。pagecache落盘完全由OS来完成，不由Kafka控制。</p>
+</blockquote>
+</li>
+<li><p>倘若此时副本 B 所在的 Broker 宕机，当它重启回来后，副本 B 会执行日志截断操作，将 LEO 值调整为之前的高水位值，也就是 1。为什么要将LE0的值设置为HW的值。LEO的值是消息写入磁盘后才被更新的，也就是数据已经落地。重启后继续用LEO的值会有什么问题吗</p>
+<blockquote>
+<p>必须要调整到水位值，因为即使消息被写入到磁盘上了，不代表这条消息就提交成功了。未成功提交的消息即使写入了磁盘也要做截断</p>
+</blockquote>
+</li>
+<li><p>在启用了Leader Epoch机制后，Follower副本B重启回来后，是如何知道Leader得LEO值?</p>
+<blockquote>
+<p>会从leader处拉取最新的leader epoch项对应的end offset，如果是最新的epoch，那么其end offset对应的就是LEO值</p>
+</blockquote>
+</li>
+<li><p>follower 副本为什么要进行日志截断？</p>
+<blockquote>
+<p>这是由于消息会先记录到 leader，follower 再从 leader 中拉取消息进行同步，这就导致 leader LEO 会比 follower 的要大（follower 之间的 offset 也不尽相同，虽然最终会一致，但过程中会有差异），假设此时出现 leader 切换，有可能选举了一个 LEO 较小的 follower 成为新的 leader，这时该副本的 LEO 就会成为新的标准，这就会导致 follower LEO 值有可能会比 leader LEO 值要大的情况，因此 follower 在进行同步之前，需要从 leader 获取 LastOffset 的值（该值后面会有解释），如果 LastOffset 小于 当前 LEO，则需要进行日志截断，然后再从 leader 拉取数据实现同步。</p>
+</blockquote>
+</li>
+<li><p>日志截断会不会造成数据丢失？</p>
+<blockquote>
+<p>HW 值以上的消息是没有“已提交”或“已备份”的，因此消息也是对消费者不可见，即这些消息不对用户作承诺，也即是说从 HW 值截断日志，并不会导致数据丢失（承诺用户范围内）。</p>
+</blockquote>
+</li>
+</ol>
+<h1 id="资料"><a href="#资料" class="headerlink" title="资料"></a>资料</h1><p><a target="_blank" rel="noopener" href="https://time.geekbang.org/column/article/112118">https://time.geekbang.org/column/article/112118</a></p>
+<p><a target="_blank" rel="noopener" href="https://cloud.tencent.com/developer/news/477109">https://cloud.tencent.com/developer/news/477109</a></p>
 
     </div>
 
@@ -578,13 +660,13 @@
     <span class="post-meta-item-icon">
       <i class="fa fa-chart-line"></i>
     </span>
-    <span title="Symbols count total">8k</span>
+    <span title="Symbols count total">12k</span>
   </span>
   <span class="post-meta-item">
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="Reading time total">7 mins.</span>
+    <span title="Reading time total">11 mins.</span>
   </span>
 </div>
 <div class="busuanzi-count">
